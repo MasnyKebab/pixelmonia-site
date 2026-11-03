@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pixelmonia — Serwer Cobblemon</title>
+<link rel="icon" href="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/25.png">
+<style>
+  :root {
+    --bg-1: #0a1610;
+    --bg-2: #142e20;
+    --green: #4ade80;
+    --gold: #fbbf24;
+    --purple: #a78bfa;
+    --text: #ffffff;
+    --muted: rgba(255,255,255,0.65);
+    --card: rgba(255,255,255,0.05);
+    --border: rgba(255,255,255,0.1);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: radial-gradient(ellipse at top, var(--bg-2) 0%, var(--bg-1) 60%, #020604 100%);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+  .container { max-width: 1200px; margin: 0 auto; padding: 0 24px; position: relative; z-index: 1; }
+
+  nav {
+    position: sticky; top: 0; z-index: 100;
+    backdrop-filter: blur(20px);
+    background: rgba(10,22,16,0.7);
+    border-bottom: 1px solid var(--border);
+    padding: 16px 0;
+  }
+  .nav-inner {
+    max-width: 1200px; margin: 0 auto; padding: 0 24px;
+    display: flex; justify-content: space-between; align-items: center; gap: 20px;
+  }
+  .logo { display: flex; align-items: center; gap: 12px; font-weight: 800; font-size: 1.25rem; text-decoration: none; color: #fff; letter-spacing: -0.02em; }
+  .logo img { width: 44px; height: 44px; object-fit: contain; filter: drop-shadow(0 0 10px rgba(251,191,36,0.4)); }
+
+  .nav-links { display: flex; gap: 28px; align-items: center; }
+  .nav-links a { color: var(--muted); text-decoration: none; font-size: 0.95rem; font-weight: 500; transition: color 0.2s; }
+  .nav-links a:hover { color: var(--green); }
+  .nav-cta {
+    background: var(--green); color: #000 !important;
+    padding: 10px 20px; border-radius: 10px; font-weight: 700 !important;
+    transition: transform 0.2s, box-shadow 0.2s !important;
+  }
+  .nav-cta:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(74,222,128,0.4); }
+
+  .hero { padding: 100px 0 80px; text-align: center; position: relative; overflow: hidden; }
+  .hero-floats { position: absolute; inset: 0; pointer-events: none; z-index: 0; }
+  .hero-floats img { position: absolute; width: 130px; image-rendering: pixelated; opacity: 0.13; animation: float 8s ease-in-out infinite; }
+  .hero-floats img:nth-child(1) { top: 12%; left: 6%; animation-delay: 0s; }
+  .hero-floats img:nth-child(2) { top: 60%; left: 4%; animation-delay: 1.5s; }
+  .hero-floats img:nth-child(3) { top: 18%; right: 6%; animation-delay: 3s; }
+  .hero-floats img:nth-child(4) { top: 68%; right: 4%; animation-delay: 4.5s; }
+  @keyframes float { 0%,100%{transform:translateY(0) rotate(-2deg)} 50%{transform:translateY(-25px) rotate(2deg)} }
+
+  .badge {
+    display: inline-block; padding: 8px 18px;
+    background: rgba(251,191,36,0.15); border: 1px solid rgba(251,191,36,0.4);
+    color: var(--gold); border-radius: 20px; font-size: 0.85rem; font-weight: 700;
+    margin-bottom: 24px; letter-spacing: 0.3px;
+  }
+  .hero h1 {
+    font-size: clamp(2.5rem, 6.5vw, 5rem); font-weight: 900; line-height: 1.02;
+    letter-spacing: -0.03em; margin-bottom: 22px;
+    background: linear-gradient(135deg, #fff 0%, #4ade80 45%, #fbbf24 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  }
+  .hero-sub { font-size: 1.25rem; color: var(--muted); max-width: 620px; margin: 0 auto 42px; line-height: 1.6; }
+
+  .status-box {
+    display: inline-flex; flex-direction: column; gap: 14px;
+    background: var(--card); border: 1px solid var(--border); border-radius: 20px;
+    padding: 24px 32px; backdrop-filter: blur(20px); margin-bottom: 40px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+  }
+  .status-line { display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 1rem; font-weight: 600; }
+  .dot { width: 12px; height: 12px; border-radius: 50%; background: #888; animation: pulse 2s infinite; }
+  .dot.online { background: var(--green); box-shadow: 0 0 15px var(--green); }
+  .dot.offline { background: #ef4444; animation: none; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
+  .ip-row { display: flex; gap: 10px; align-items: center; }
+  .ip { font-family: 'Courier New', monospace; font-size: 1.05rem; background: rgba(0,0,0,0.4); padding: 12px 20px; border-radius: 10px; border: 1px solid var(--border); letter-spacing: 0.5px; }
+  .copy-btn {
+    background: var(--green); color: #000; border: none; padding: 12px 24px;
+    border-radius: 10px; font-weight: 700; font-size: 0.95rem; cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s; font-family: inherit;
+  }
+  .copy-btn:hover { transform: scale(1.05); box-shadow: 0 10px 25px rgba(74,222,128,0.4); }
+
+  .hero-buttons { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+  .btn-primary {
+    background: linear-gradient(135deg, var(--gold), #f59e0b); color: #000;
+    padding: 16px 36px; border-radius: 14px; font-weight: 800; font-size: 1.05rem;
+    text-decoration: none; display: inline-flex; align-items: center; gap: 8px;
+    box-shadow: 0 10px 30px rgba(251,191,36,0.3); transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .btn-primary:hover { transform: translateY(-3px); box-shadow: 0 15px 40px rgba(251,191,36,0.5); }
+  .btn-secondary {
+    background: var(--card); border: 1px solid var(--border); color: var(--text);
+    padding: 16px 36px; border-radius: 14px; font-weight: 700; font-size: 1.05rem;
+    text-decoration: none; display: inline-flex; align-items: center; gap: 8px;
+    transition: transform 0.2s, background 0.2s;
+  }
+  .btn-secondary:hover { transform: translateY(-3px); background: rgba(255,255,255,0.09); }
+
+  .section { padding: 80px 0; }
+  .section-header { text-align: center; margin-bottom: 56px; }
+  .section-header h2 { font-size: clamp(2rem, 4vw, 2.75rem); font-weight: 800; margin-bottom: 12px; }
+  .section-header p { color: var(--muted); font-size: 1.1rem; max-width: 600px; margin: 0 auto; }
+
+  .steps-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 24px; max-width: 1000px; margin: 0 auto; }
+  .step-card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 20px;
+    padding: 32px 24px; text-align: center; position: relative;
+    transition: border-color 0.3s, transform 0.3s;
+    display: flex; flex-direction: column; align-items: center;
+  }
+  .step-card:hover { border-color: rgba(74,222,128,0.4); transform: translateY(-4px); }
+  .step-number {
+    width: 44px; height: 44px; margin: 0 auto 16px; border-radius: 50%;
+    background: rgba(74,222,128,0.15); border: 1px solid rgba(74,222,128,0.4);
+    color: var(--green); font-weight: 800; font-size: 1.15rem;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .step-card h3 { font-size: 1.15rem; margin-bottom: 10px; font-weight: 700; }
+  .step-card p { color: var(--muted); font-size: 0.95rem; line-height: 1.55; margin-bottom: 16px; flex: 1; }
+  .step-link, .step-copy-btn {
+    display: inline-block;
+    padding: 10px 20px;
+    border-radius: 10px;
+    background: rgba(74,222,128,0.15);
+    border: 1px solid rgba(74,222,128,0.4);
+    color: var(--green);
+    font-weight: 700;
+    font-size: 0.9rem;
+    text-decoration: none;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background 0.2s, transform 0.2s;
+  }
+  .step-link:hover, .step-copy-btn:hover {
+    background: rgba(74,222,128,0.25);
+    transform: translateY(-1px);
+  }
+
+  .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 24px; }
+  .feature-card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 20px;
+    padding: 32px; transition: border-color 0.3s, transform 0.3s;
+  }
+  .feature-card:hover { border-color: rgba(251,191,36,0.4); transform: translateY(-4px); }
+  .feature-icon { font-size: 2rem; margin-bottom: 16px; display: block; }
+  .feature-card h3 { font-size: 1.15rem; margin-bottom: 8px; font-weight: 700; }
+  .feature-card p { color: var(--muted); font-size: 0.95rem; line-height: 1.6; }
+
+  .single-lane {
+    max-width: 600px; margin: 0 auto;
+    background: var(--card); border: 1px solid var(--border); border-radius: 24px;
+    padding: 48px; text-align: center;
+    transition: transform 0.3s, border-color 0.3s;
+  }
+  .single-lane:hover { transform: translateY(-6px); border-color: rgba(251,191,36,0.5); box-shadow: 0 25px 60px rgba(251,191,36,0.1); }
+  .lane-icon { font-size: 3.5rem; margin-bottom: 20px; display: block; }
+  .single-lane h3 { font-size: 2rem; margin-bottom: 20px; font-weight: 800; color: var(--gold); }
+  .single-lane ul { list-style: none; margin-bottom: 32px; text-align: left; display: inline-block; }
+  .single-lane li { padding: 10px 0; color: var(--muted); display: flex; align-items: center; gap: 10px; }
+  .single-lane li::before { content: '✓'; color: var(--gold); font-weight: 900; }
+  .lane-btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 16px 36px; border-radius: 12px; text-decoration: none; font-weight: 800;
+    background: var(--gold); color: #000;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .lane-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(0,0,0,0.4); }
+
+  .pokemon-strip { display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; padding: 40px 0; }
+  .pokemon-strip img { width: 85px; height: 85px; image-rendering: pixelated; filter: drop-shadow(0 10px 20px rgba(0,0,0,0.5)); transition: transform 0.3s; }
+  .pokemon-strip img:hover { transform: translateY(-12px) scale(1.15); }
+
+  .pokedex-card {
+    display: block;
+    background: linear-gradient(135deg, rgba(167,139,250,0.12), rgba(74,222,128,0.06));
+    border: 1px solid rgba(167,139,250,0.35); border-radius: 24px;
+    padding: 60px 40px; text-align: center;
+    text-decoration: none; color: inherit;
+    transition: transform 0.3s, border-color 0.3s, box-shadow 0.3s;
+  }
+  .pokedex-card:hover {
+    transform: translateY(-6px);
+    border-color: rgba(167,139,250,0.6);
+    box-shadow: 0 25px 60px rgba(167,139,250,0.15);
+  }
+  .pokedex-icon { font-size: 4rem; margin-bottom: 20px; display: block; }
+  .pokedex-card h3 { font-size: 2rem; font-weight: 800; margin-bottom: 12px; color: var(--purple); }
+  .pokedex-card p { color: var(--muted); font-size: 1.1rem; max-width: 500px; margin: 0 auto 28px; line-height: 1.6; }
+  .pokedex-cta {
+    display: inline-block; background: var(--purple); color: #000;
+    padding: 14px 32px; border-radius: 12px; font-weight: 800;
+    transition: transform 0.2s;
+  }
+  .pokedex-card:hover .pokedex-cta { transform: translateY(-2px); }
+
+  .faq-list { max-width: 800px; margin: 0 auto; display: flex; flex-direction: column; gap: 12px; }
+  .faq-item {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+    transition: border-color 0.3s;
+  }
+  .faq-item:hover { border-color: rgba(255,255,255,0.2); }
+  .faq-item summary {
+    padding: 20px 24px;
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 1.05rem;
+    list-style: none;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+  }
+  .faq-item summary::-webkit-details-marker { display: none; }
+  .faq-item summary::after {
+    content: '+';
+    font-size: 1.5rem;
+    color: var(--green);
+    font-weight: 400;
+    transition: transform 0.2s;
+  }
+  .faq-item[open] summary::after { transform: rotate(45deg); }
+  .faq-item[open] summary { color: var(--green); }
+  .faq-answer {
+    padding: 0 24px 20px;
+    color: var(--muted);
+    font-size: 0.95rem;
+    line-height: 1.65;
+  }
+
+  /* KALENDARZ */
+  #calendar {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 20px;
+    padding: 24px;
+    color: #fff;
+  }
+  .fc { color: #fff; }
+  .fc-theme-standard td, .fc-theme-standard th { border-color: rgba(255,255,255,0.1); }
+  .fc-theme-standard .fc-scrollgrid { border-color: rgba(255,255,255,0.1); }
+  .fc .fc-toolbar-title { color: #fff; font-weight: 800; }
+  .fc .fc-button-primary {
+    background: rgba(74,222,128,0.15) !important;
+    border-color: rgba(74,222,128,0.4) !important;
+    color: #4ade80 !important;
+    font-weight: 700;
+  }
+  .fc .fc-button-primary:hover {
+    background: rgba(74,222,128,0.25) !important;
+  }
+  .fc .fc-button-primary:disabled {
+    background: rgba(255,255,255,0.05) !important;
+    border-color: rgba(255,255,255,0.1) !important;
+    color: rgba(255,255,255,0.4) !important;
+  }
+  .fc-daygrid-day-number { color: rgba(255,255,255,0.65); }
+  .fc-col-header-cell-cushion { color: #fff; font-weight: 700; text-transform: uppercase; font-size: 0.85rem; }
+  .fc-event {
+    background: #4ade80 !important;
+    border-color: #4ade80 !important;
+    color: #000 !important;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .fc-event:hover { background: #22c55e !important; }
+
+  .news-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; }
+  .news-card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 20px;
+    overflow: hidden; transition: transform 0.3s, border-color 0.3s;
+    text-decoration: none; color: inherit; display: block;
+  }
+  .news-card:hover { transform: translateY(-6px); border-color: rgba(255,255,255,0.25); }
+  .news-thumb { height: 160px; background: linear-gradient(135deg, var(--bg-2), #2d1f12); display: flex; align-items: center; justify-content: center; position: relative; }
+  .news-thumb img { width: 105px; image-rendering: pixelated; }
+  .news-tag { position: absolute; top: 12px; left: 12px; background: rgba(0,0,0,0.65); color: var(--green); padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; }
+  .news-tag.gold { color: var(--gold); }
+  .news-tag.purple { color: var(--purple); }
+  .news-body { padding: 24px; }
+  .news-body h3 { font-size: 1.2rem; margin-bottom: 8px; font-weight: 700; }
+  .news-body p { color: var(--muted); font-size: 0.95rem; line-height: 1.6; }
+  .news-date { color: var(--green); font-size: 0.85rem; margin-top: 12px; font-weight: 600; }
+
+  footer { background: rgba(0,0,0,0.4); border-top: 1px solid var(--border); padding: 60px 0 30px; margin-top: 80px; }
+  .footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 40px; margin-bottom: 40px; }
+  @media (max-width: 800px) { .footer-grid { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 500px) { .footer-grid { grid-template-columns: 1fr; } }
+  .footer-col h4 { font-size: 1rem; margin-bottom: 16px; font-weight: 700; color: var(--green); text-transform: uppercase; }
+  .footer-col a { display: block; color: var(--muted); text-decoration: none; padding: 6px 0; font-size: 0.95rem; transition: color 0.2s; }
+  .footer-col a:hover { color: var(--green); }
+  .footer-col p { color: var(--muted); font-size: 0.95rem; line-height: 1.6; }
+  .footer-bottom { text-align: center; padding-top: 30px; border-top: 1px solid var(--border); color: var(--muted); font-size: 0.9rem; }
+
+  @media (max-width: 800px) {
+    .nav-links a:not(.nav-cta) { display: none; }
+    .hero { padding: 60px 0 40px; }
+    .section { padding: 60px 0; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <a href="index.html" class="logo">
+      <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/25.png" alt="Pikachu">
+      <span>Pixelmonia</span>
+    </a>
+    <div class="nav-links">
+      <a href="#lanes">Gra</a>
+      <a href="staff.html">Staff</a>
+      <a href="https://www.cobbleverseguides.com/" target="_blank" rel="noopener">Wiki</a>
+      <a href="#news">Nowości</a>
+      <a href="#kalendarz">Kalendarz</a>
+      <a href="https://discord.gg/GnqEEMP2zh" class="nav-cta" target="_blank" rel="noopener">Discord</a>
+    </div>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="hero-floats">
+    <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1.png" alt="">
+    <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/4.png" alt="">
+    <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/7.png" alt="">
+    <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/25.png" alt="">
+  </div>
+  <div class="container">
+    <div class="badge">✨ Sezon 6 — Wkrótce</div>
+    <h1>Najlepsza Przygoda<br>z Cobblemon</h1>
+    <p class="hero-sub">Miejsce, gdzie możesz rywalizować i kolekcjonować. Dołącz do społeczności Pixelmonia.</p>
+
+    <div class="status-box">
+      <div class="status-line">
+        <span class="dot" id="statusDot"></span>
+        <span id="statusText">Sprawdzanie statusu...</span>
+      </div>
+      <div class="ip-row">
+        <span class="ip" id="serverIp">Pixelmonia.pl</span>
+        <button class="copy-btn" onclick="copyIp()">Kopiuj IP</button>
+      </div>
+    </div>
+
+    <div class="hero-buttons">
+      <a href="https://discord.gg/GnqEEMP2zh" class="btn-primary" target="_blank" rel="noopener">💬 Dołącz na Discord</a>
+      <a href="https://www.cobbleverseguides.com/" class="btn-secondary" target="_blank" rel="noopener">📖 Przeglądaj Wiki</a>
+    </div>
+  </div>
+</section>
+
+<section style="padding:20px 0;">
+  <div class="container">
+    <div class="pokemon-strip">
+      <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/6.png" alt="">
+      <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/9.png" alt="">
+      <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/3.png" alt="">
+      <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/149.png" alt="">
+      <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/150.png" alt="">
+      <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/94.png" alt="">
+      <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/143.png" alt="">
+    </div>
+  </div>
+</section>
+
+<!-- JAK ZACZĄĆ -->
+<section class="section" id="start">
+  <div class="container">
+    <div class="section-header">
+      <h2>Jak zacząć?</h2>
+      <p>Trzy kroki i jesteś w grze.</p>
+    </div>
+    <div class="steps-grid">
+
+      <div class="step-card">
+        <div class="step-number">1</div>
+        <h3>Wejdź na Discord</h3>
+        <p>Discord to nasze centrum — tam znajdziesz modpacka, eventy, zapisy na turnieje i pomoc od staffu.</p>
+        <a href="https://discord.gg/GnqEEMP2zh" class="step-link" target="_blank" rel="noopener">Dołącz na Discord →</a>
+      </div>
+
+      <div class="step-card">
+        <div class="step-number">2</div>
+        <h3>Pobierz modpacka</h3>
+        <p>Pobierz nasz oficjalny modpack z kanału <strong>#｜𝓙𝓐𝓚-𝓩𝓐𝓖𝓡𝓐𝓒▸🔽｜</strong> na Discordzie lub kliknij bezpośredni link poniżej.</p>
+        <a href="https://www.mediafire.com/file/ha2on4pea48owgw/PixelMonia+-+Server+Modpack+1.1.0.mrpack/file" class="step-link" target="_blank" rel="noopener">Pobierz modpack →</a>
+      </div>
+
+      <div class="step-card">
+        <div class="step-number">3</div>
+        <h3>Skopiuj IP i wejdź</h3>
+        <p>Uruchom modpacka, wklej IP <strong style="color:#4ade80;">Pixelmonia.pl</strong> i dołącz do serwera.</p>
+        <button class="step-copy-btn" onclick="copyIp()">Kopiuj IP</button>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- DLACZEGO PIXELMONIA -->
+<section class="section" id="why">
+  <div class="container">
+    <div class="section-header">
+      <h2>Dlaczego Pixelmonia?</h2>
+      <p>Bo nie jesteśmy kolejnym pustym serwerem.</p>
+    </div>
+    <div class="features-grid">
+      <div class="feature-card">
+        <span class="feature-icon">🎮</span>
+        <h3>Stabilny serwer</h3>
+        <p>Bez lagów, bez crashy. Hosting klasy premium i optymalizacja pod Cobblemon.</p>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">👥</span>
+        <h3>Aktywna społeczność</h3>
+        <p>Setki graczy na Discordzie, cotygodniowe eventy i pomoc od staffu.</p>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">✨</span>
+        <h3>Sezonowe nowości</h3>
+        <p>Każdy sezon to nowe wyzwania, nagrody i content. Sezon 6 nadchodzi!</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- RYWALIZACJA -->
+<section class="section" id="lanes">
+  <div class="container">
+    <div class="section-header">
+      <h2>Rywalizacja</h2>
+      <p>Dominuj w rankingu, buduj drużynę i wygrywaj turnieje.</p>
+    </div>
+    <div class="single-lane">
+      <span class="lane-icon">🏆</span>
+      <h3>Wejdź na Arenę</h3>
+      <ul>
+        <li>Rankingi PvP</li>
+        <li>Cotygodniowe turnieje z nagrodami</li>
+        <li>Giełda dla kompetetywnych graczy</li>
+        <li>Wyzwania liderów sal</li>
+      </ul>
+      <a href="https://discord.gg/GnqEEMP2zh" class="lane-btn" target="_blank" rel="noopener">Dołącz do rywalizacji →</a>
+    </div>
+  </div>
+</section>
+
+<!-- POKEDEX -->
+<section class="section" id="pokedex">
+  <div class="container">
+    <a href="https://www.cobbleverseguides.com/pokemon" class="pokedex-card" target="_blank" rel="noopener">
+      <span class="pokedex-icon">📖</span>
+      <h3>Kompletny Pokédex</h3>
+      <p>Sprawdź statystyki, typy i ewolucje wszystkich Pokémonów. Pełna baza z 9 generacji — otwórz w nowej karcie.</p>
+      <span class="pokedex-cta">Otwórz Pokédex →</span>
+    </a>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" id="faq">
+  <div class="container">
+    <div class="section-header">
+      <h2>Najczęstsze pytania</h2>
+      <p>Krótkie odpowiedzi na to, o co pytacie najczęściej.</p>
+    </div>
+    <div class="faq-list">
+
+      <details class="faq-item">
+        <summary>Jak zainstalować modpack?</summary>
+        <div class="faq-answer">
+          Wejdź na nasz Discord, przejdź do kanału <strong>#｜𝓙𝓐𝓚-𝓩𝓐𝓖𝓡𝓐𝓒▸🔽｜</strong> i pobierz plik modpacka. Następnie zaimportuj go do Modrinth lub Prism Launcher.
+        </div>
+      </details>
+
+      <details class="faq-item">
+        <summary>Czy serwer jest premium?</summary>
+        <div class="faq-answer">
+          Tak, serwer wymaga konta premium Minecraft. Nie obsługujemy trybu offline.
+        </div>
+      </details>
+
+      <details class="faq-item">
+        <summary>Jak zgłosić gracza lub błąd?</summary>
+        <div class="faq-answer">
+          Najszybciej przez Discord — napisz na kanale pomocy lub oznacz staff. Możesz też napisać bezpośrednio do właściciela.
+        </div>
+      </details>
+
+      <details class="faq-item">
+        <summary>Kiedy startuje Sezon 6?</summary>
+        <div class="faq-answer">
+          Dokładna data nie została jeszcze ogłoszona. Śledź Discorda — tam pojawi się pierwsza informacja.
+        </div>
+      </details>
+
+    </div>
+  </div>
+</section>
+
+<!-- KALENDARZ EVENTÓW -->
+<section class="section" id="kalendarz">
+  <div class="container">
+    <div class="section-header">
+      <h2>Kalendarz Eventów</h2>
+      <p>Sprawdź, co się dzieje na serwerze.</p>
+    </div>
+    <div id="calendar"></div>
+  </div>
+</section>
+
+<!-- NEWS -->
+<section class="section" id="news">
+  <div class="container">
+    <div class="section-header">
+      <h2>Najnowsze z Pixelmonii</h2>
+      <p>Aktualizacje, eventy i wydarzenia społeczności.</p>
+    </div>
+    <div class="news-grid">
+      <a href="https://discord.gg/GnqEEMP2zh" class="news-card" target="_blank" rel="noopener">
+        <div class="news-thumb">
+          <span class="news-tag purple">Sezon 6</span>
+          <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/6.png" alt="">
+        </div>
+        <div class="news-body">
+          <h3>Sezon 6 Nadchodzi</h3>
+          <p>Nowy sezon pełen świeżej zawartości, nagród i niespodzianek. Szczegóły najpierw na Discordzie.</p>
+          <div class="news-date">📅 Wkrótce</div>
+        </div>
+      </a>
+      <a href="https://discord.gg/GnqEEMP2zh" class="news-card" target="_blank" rel="noopener">
+        <div class="news-thumb">
+          <span class="news-tag gold">Turniej</span>
+          <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/130.png" alt="">
+        </div>
+        <div class="news-body">
+          <h3>Cotygodniowy Turniej w Soboty</h3>
+          <p>Zapisy będą na discordzie - Nagrody bedą tylko dla top 3</p>
+          <div class="news-date">📅 Sobota</div>
+        </div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Pixelmonia</h4>
+        <p>Społeczność dla każdego trenera. Stworzona przez graczy dla graczy.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Gra</h4>
+        <a href="index.html">Strona główna</a>
+        <a href="#lanes">Rywalizacja</a>
+        <a href="https://www.cobbleverseguides.com/pokemon" target="_blank" rel="noopener">Pokédex</a>
+      </div>
+      <div class="footer-col">
+        <h4>Społeczność</h4>
+        <a href="https://discord.gg/GnqEEMP2zh" target="_blank" rel="noopener">Discord</a>
+        <a href="staff.html">Staff</a>
+        <a href="https://www.cobbleverseguides.com/" target="_blank" rel="noopener">Wiki</a>
+      </div>
+      <div class="footer-col">
+        <h4>Serwer</h4>
+        <a href="#" onclick="copyIp();return false;">Kopiuj IP</a>
+        <a href="#">Status</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      © 2026 Pixelmonia · Pixelmonia.pl · Sezon 6 wkrótce · Niepowiązane z Mojang, Nintendo ani The Pokémon Company.
+    </div>
+  </div>
+</footer>
+
+<script>
+  const SERVER_IP = "Pixelmonia.pl";
+  document.getElementById('serverIp').textContent = SERVER_IP;
+
+  function copyIp() {
+    navigator.clipboard.writeText(SERVER_IP).then(() => {
+      const btn = document.querySelector('.copy-btn');
+      const orig = btn.textContent;
+      btn.textContent = '✓ Skopiowano!';
+      setTimeout(() => btn.textContent = orig, 1500);
+    });
+  }
+
+  fetch(`https://api.mcstatus.io/v2/status/java/${SERVER_IP}`)
+    .then(r => r.json())
+    .then(data => {
+      const dot = document.getElementById('statusDot');
+      const text = document.getElementById('statusText');
+      if (data.online) {
+        dot.classList.add('online');
+        text.textContent = `Online — ${data.players.online} graczy`;
+      } else {
+        dot.classList.add('offline');
+        text.textContent = 'Serwer offline';
+      }
+    })
+    .catch(() => {
+      document.getElementById('statusText').textContent = 'Status niedostępny';
+      document.getElementById('statusDot').classList.add('offline');
+    });
+</script>
+
+<!-- FULLCALENDAR -->
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@7.1.3/index.global.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@7.1.3/index.global.min.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const calendarEl = document.getElementById('calendar');
+    if (calendarEl && typeof FullCalendar !== 'undefined') {
+      const calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'dayGridMonth',
+        locale: 'pl',
+        headerToolbar: {
+          left: 'prev,next today',
+          center: 'title',
+          right: 'dayGridMonth,listWeek'
+        },
+        events: [
+          // Eventy z CMS będą dodawane dynamicznie
+          // Na razie przykładowy event
+          {
+            title: 'Przykładowy Turniej',
+            start: '2026-11-10T18:00:00',
+            description: 'To jest przykładowy event. Możesz go usunąć w panelu admina.'
+          }
+        ],
+        eventColor: '#4ade80',
+        eventTextColor: '#000',
+        eventClick: function(info) {
+          if (info.event.extendedProps.description) {
+            alert(info.event.title + '\n\n' + info.event.extendedProps.description);
+          }
+        }
+      });
+      calendar.render();
+    }
+  });
+</script>
+
+</body>
+</html>

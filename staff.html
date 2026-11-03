@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Staff — Pixelmonia</title>
+<link rel="icon" href="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/25.png">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: radial-gradient(ellipse at top, #142e20 0%, #0a1610 60%, #020604 100%);
+    color: #fff;
+    min-height: 100vh;
+  }
+  a { text-decoration: none; color: inherit; }
+  .container { max-width: 1000px; margin: 0 auto; padding: 0 24px; }
+
+  nav {
+    position: sticky; top: 0; z-index: 100;
+    backdrop-filter: blur(20px);
+    background: rgba(10,22,16,0.7);
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    padding: 16px 0;
+  }
+  .nav-inner {
+    max-width: 1000px; margin: 0 auto; padding: 0 24px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .logo { display: flex; align-items: center; gap: 12px; font-weight: 800; font-size: 1.25rem; color: #fff; }
+  .logo img { width: 40px; height: 40px; object-fit: contain; filter: drop-shadow(0 0 10px rgba(251,191,36,0.4)); }
+  .nav-links { display: flex; gap: 24px; align-items: center; font-size: 0.95rem; }
+  .nav-links a { color: rgba(255,255,255,0.65); transition: color 0.2s; }
+  .nav-links a:hover { color: #4ade80; }
+  .nav-cta {
+    background: #4ade80; color: #000 !important;
+    padding: 8px 18px; border-radius: 8px; font-weight: 600; font-size: 0.9rem;
+  }
+
+  /* HERO NAGŁÓWEK */
+  .page-header {
+    padding: 90px 0 60px;
+    text-align: center;
+    position: relative;
+  }
+  .page-header .kicker {
+    display: inline-block;
+    padding: 6px 16px;
+    background: rgba(74,222,128,0.12);
+    border: 1px solid rgba(74,222,128,0.35);
+    color: #4ade80;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+  }
+  .page-header h1 {
+    font-size: clamp(2.2rem, 5vw, 3.5rem);
+    font-weight: 900;
+    letter-spacing: -0.03em;
+    margin-bottom: 16px;
+    background: linear-gradient(135deg, #fff 0%, #4ade80 50%, #fbbf24 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .page-header p {
+    color: rgba(255,255,255,0.65);
+    font-size: 1.1rem;
+    max-width: 500px;
+    margin: 0 auto;
+    line-height: 1.6;
+  }
+
+  /* KARTY STAFFU */
+  .staff-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 28px;
+    padding: 40px 0 80px;
+  }
+  .staff-card {
+    position: relative;
+    background: linear-gradient(180deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 100%);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 24px;
+    padding: 40px 32px 32px;
+    text-align: center;
+    overflow: hidden;
+    transition: transform 0.3s, border-color 0.3s, box-shadow 0.3s;
+  }
+  .staff-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, transparent, currentColor, transparent);
+    opacity: 0.6;
+  }
+  .staff-card.owner { color: #fbbf24; }
+  .staff-card.helper { color: #60a5fa; }
+  .staff-card.owner:hover {
+    transform: translateY(-8px);
+    border-color: rgba(251,191,36,0.5);
+    box-shadow: 0 25px 60px rgba(251,191,36,0.15);
+  }
+  .staff-card.helper:hover {
+    transform: translateY(-8px);
+    border-color: rgba(96,165,250,0.5);
+    box-shadow: 0 25px 60px rgba(96,165,250,0.15);
+  }
+
+  /* RANGA NAD GŁOWĄ */
+  .role-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 24px;
+  }
+  .role-badge.owner { background: rgba(251,191,36,0.15); border: 1px solid rgba(251,191,36,0.4); color: #fbbf24; }
+  .role-badge.helper { background: rgba(96,165,250,0.15); border: 1px solid rgba(96,165,250,0.4); color: #60a5fa; }
+
+  /* GŁOWA */
+  .staff-head {
+    width: 140px;
+    height: 140px;
+    margin: 0 auto 20px;
+    border-radius: 20px;
+    overflow: hidden;
+    background: #0f172a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+  .staff-card.owner .staff-head { border: 3px solid #fbbf24; box-shadow: 0 0 30px rgba(251,191,36,0.35); }
+  .staff-card.helper .staff-head { border: 3px solid #60a5fa; box-shadow: 0 0 30px rgba(96,165,250,0.35); }
+  .staff-head img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    image-rendering: pixelated;
+  }
+
+  /* NAZWA + OPIS */
+  .staff-name {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #fff;
+    margin-bottom: 8px;
+    letter-spacing: -0.02em;
+  }
+  .staff-desc {
+    color: rgba(255,255,255,0.6);
+    font-size: 0.95rem;
+    line-height: 1.5;
+    margin-bottom: 4px;
+  }
+
+  /* SEKCJA REKRUTACJI */
+  .join-team {
+    background: linear-gradient(135deg, rgba(74,222,128,0.1), rgba(251,191,36,0.06));
+    border: 1px solid rgba(74,222,128,0.3);
+    border-radius: 24px;
+    padding: 48px 40px;
+    text-align: center;
+    margin-bottom: 60px;
+  }
+  .join-team .icon { font-size: 3rem; display: block; margin-bottom: 16px; }
+  .join-team h2 {
+    font-size: 1.75rem;
+    font-weight: 800;
+    margin-bottom: 12px;
+    color: #4ade80;
+  }
+  .join-team p {
+    color: rgba(255,255,255,0.65);
+    font-size: 1.05rem;
+    max-width: 500px;
+    margin: 0 auto 24px;
+    line-height: 1.6;
+  }
+  .join-team a {
+    display: inline-block;
+    background: #4ade80;
+    color: #000;
+    padding: 14px 32px;
+    border-radius: 12px;
+    font-weight: 800;
+    font-size: 1rem;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .join-team a:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(74,222,128,0.4);
+  }
+
+  footer {
+    padding: 48px 0 32px;
+    border-top: 1px solid rgba(255,255,255,0.1);
+    text-align: center;
+    color: rgba(255,255,255,0.5);
+    font-size: 0.85rem;
+  }
+
+  @media (max-width: 600px) {
+    .nav-links a:not(.nav-cta) { display: none; }
+    .page-header { padding: 60px 0 40px; }
+    .staff-grid { padding: 20px 0 60px; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <a href="index.html" class="logo">
+      <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/25.png" alt="Pikachu">
+      <span>Pixelmonia</span>
+    </a>
+    <div class="nav-links">
+      <a href="index.html">Strona główna</a>
+      <a href="staff.html" style="color:#fff;">Staff</a>
+      <a href="https://www.cobbleverseguides.com/" target="_blank" rel="noopener">Wiki</a>
+      <a href="https://discord.gg/GnqEEMP2zh" class="nav-cta" target="_blank" rel="noopener">Discord</a>
+    </div>
+  </div>
+</nav>
+
+<div class="page-header">
+  <div class="container">
+    <span class="kicker">Zespół</span>
+    <h1>Poznaj nasz staff</h1>
+    <p>Ludzie, którzy dbają o to, żeby Pixelmonia była najlepszym miejscem do gry.</p>
+  </div>
+</div>
+
+<div class="container">
+  <div class="staff-grid">
+
+    <!-- DarkKebab -->
+    <div class="staff-card owner">
+      <div class="role-badge owner">👑 Właściciel</div>
+      <div class="staff-head">
+        <img src="darkkebab.png" alt="DarkKebab"
+             onerror="this.onerror=null; this.src='https://mc-heads.net/avatar/DarkKebab/140';">
+      </div>
+      <div class="staff-name">DarkKebab</div>
+      <p class="staff-desc">Założyciel serwera. Odpowiada za całą wizję Pixelmonii.</p>
+    </div>
+
+    <!-- Mehiss -->
+    <div class="staff-card helper">
+      <div class="role-badge helper">🛠️ Pomocnik</div>
+      <div class="staff-head">
+        <img src="mehiss.png" alt="Mehiss"
+             onerror="this.onerror=null; this.src='https://mc-heads.net/avatar/Mehiss/140';">
+      </div>
+      <div class="staff-name">Mehiss</div>
+      <p class="staff-desc">Pomaga nowym graczom i dba o porządek na serwerze.</p>
+    </div>
+
+  </div>
+
+  <!-- REKRUTACJA -->
+  <div class="join-team">
+    <span class="icon">🚀</span>
+    <h2>Chcesz dołączyć do zespołu?</h2>
+    <p>Szukamy pomocników, moderatorów i builderów. Jeśli chcesz współtworzyć Pixelmonię — odezwij się na Discordzie.</p>
+    <a href="https://discord.gg/GnqEEMP2zh" target="_blank" rel="noopener">Aplikuj na Discordzie →</a>
+  </div>
+
+</div>
+
+<footer>
+  <div class="container">
+    © 2026 Pixelmonia · Pixelmonia.pl · Niepowiązane z Mojang, Nintendo ani The Pokémon Company.
+  </div>
+</footer>
+
+</body>
+</html>
