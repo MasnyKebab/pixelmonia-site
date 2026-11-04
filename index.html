@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Pixelmonia — Serwer Cobblemon</title>
 <link rel="icon" href="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/25.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root {
     --bg-1: #0a1610;
@@ -12,20 +15,40 @@
     --green: #4ade80;
     --gold: #fbbf24;
     --purple: #a78bfa;
+    --blue: #60a5fa;
     --text: #ffffff;
     --muted: rgba(255,255,255,0.65);
     --card: rgba(255,255,255,0.05);
     --border: rgba(255,255,255,0.1);
+    --radius: 24px;
+    --radius-sm: 16px;
+    --font-heading: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
   html { scroll-behavior: smooth; }
   body {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-family: var(--font-body);
     background: radial-gradient(ellipse at top, var(--bg-2) 0%, var(--bg-1) 60%, #020604 100%);
     color: var(--text);
     min-height: 100vh;
     overflow-x: hidden;
+    position: relative;
   }
+  h1, h2, h3, h4, .logo span { font-family: var(--font-heading); letter-spacing: -0.02em; }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: radial-gradient(circle, rgba(255,255,255,0.035) 1px, transparent 1px);
+    background-size: 24px 24px;
+    pointer-events: none;
+    z-index: 0;
+    mask-image: radial-gradient(ellipse at center, black 30%, transparent 80%);
+    -webkit-mask-image: radial-gradient(ellipse at center, black 30%, transparent 80%);
+  }
+
   .container { max-width: 1200px; margin: 0 auto; padding: 0 24px; position: relative; z-index: 1; }
 
   nav {
@@ -34,13 +57,33 @@
     background: rgba(10,22,16,0.7);
     border-bottom: 1px solid var(--border);
     padding: 16px 0;
+    transition: box-shadow 0.3s, background 0.3s;
+  }
+  nav.scrolled {
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    background: rgba(10,22,16,0.9);
   }
   .nav-inner {
     max-width: 1200px; margin: 0 auto; padding: 0 24px;
     display: flex; justify-content: space-between; align-items: center; gap: 20px;
   }
-  .logo { display: flex; align-items: center; gap: 12px; font-weight: 800; font-size: 1.25rem; text-decoration: none; color: #fff; letter-spacing: -0.02em; }
-  .logo img { width: 44px; height: 44px; object-fit: contain; filter: drop-shadow(0 0 10px rgba(251,191,36,0.4)); }
+  .logo { display: flex; align-items: center; gap: 12px; font-weight: 800; font-size: 1.25rem; text-decoration: none; color: #fff; position: relative; }
+  .logo img { width: 44px; height: 44px; object-fit: contain; filter: drop-shadow(0 0 10px rgba(251,191,36,0.4)); transition: filter 0.3s; }
+  .logo span { position: relative; display: inline-block; transition: text-shadow 0.15s; }
+  .logo:hover span::before,
+  .logo:hover span::after {
+    content: attr(data-text); position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+  }
+  .logo:hover span::before {
+    color: #4ade80; animation: glitch-1 0.4s infinite;
+    clip-path: polygon(0 0, 100% 0, 100% 45%, 0 45%); transform: translateX(-2px);
+  }
+  .logo:hover span::after {
+    color: #fbbf24; animation: glitch-2 0.4s infinite;
+    clip-path: polygon(0 55%, 100% 55%, 100% 100%, 0 100%); transform: translateX(2px);
+  }
+  @keyframes glitch-1 { 0%,100%{transform:translateX(-2px)} 50%{transform:translateX(2px)} }
+  @keyframes glitch-2 { 0%,100%{transform:translateX(2px)} 50%{transform:translateX(-2px)} }
 
   .nav-links { display: flex; gap: 28px; align-items: center; }
   .nav-links a { color: var(--muted); text-decoration: none; font-size: 0.95rem; font-weight: 500; transition: color 0.2s; }
@@ -50,10 +93,10 @@
     padding: 10px 20px; border-radius: 10px; font-weight: 700 !important;
     transition: transform 0.2s, box-shadow 0.2s !important;
   }
-  .nav-cta:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(74,222,128,0.4); }
+  .nav-cta:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(74,222,128,0.4), 0 0 30px rgba(74,222,128,0.25); }
 
   .hero { padding: 100px 0 80px; text-align: center; position: relative; overflow: hidden; }
-  .hero-floats { position: absolute; inset: 0; pointer-events: none; z-index: 0; }
+  .hero-floats { position: absolute; inset: 0; pointer-events: none; z-index: 0; will-change: transform; }
   .hero-floats img { position: absolute; width: 130px; image-rendering: pixelated; opacity: 0.13; animation: float 8s ease-in-out infinite; }
   .hero-floats img:nth-child(1) { top: 12%; left: 6%; animation-delay: 0s; }
   .hero-floats img:nth-child(2) { top: 60%; left: 4%; animation-delay: 1.5s; }
@@ -61,39 +104,115 @@
   .hero-floats img:nth-child(4) { top: 68%; right: 4%; animation-delay: 4.5s; }
   @keyframes float { 0%,100%{transform:translateY(0) rotate(-2deg)} 50%{transform:translateY(-25px) rotate(2deg)} }
 
+  .particles { position: absolute; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+  .particles span {
+    position: absolute; width: 4px; height: 4px;
+    background: rgba(74,222,128,0.6); border-radius: 50%;
+    box-shadow: 0 0 10px rgba(74,222,128,0.8);
+    animation: particle-rise linear infinite;
+  }
+  .particles span:nth-child(odd) { background: rgba(251,191,36,0.6); box-shadow: 0 0 10px rgba(251,191,36,0.8); }
+  @keyframes particle-rise {
+    0% { transform: translateY(100vh) scale(0); opacity: 0; }
+    10% { opacity: 1; } 90% { opacity: 1; }
+    100% { transform: translateY(-10vh) scale(1); opacity: 0; }
+  }
+
   .badge {
-    display: inline-block; padding: 8px 18px;
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 8px 18px;
     background: rgba(251,191,36,0.15); border: 1px solid rgba(251,191,36,0.4);
     color: var(--gold); border-radius: 20px; font-size: 0.85rem; font-weight: 700;
     margin-bottom: 24px; letter-spacing: 0.3px;
+    box-shadow: 0 0 20px rgba(251,191,36,0.15);
   }
+  .badge .badge-cursor {
+    display: inline-block; width: 2px; height: 1em;
+    background: var(--gold); animation: blink 1s infinite;
+    vertical-align: text-bottom;
+  }
+  @keyframes blink { 0%,50%{opacity:1} 51%,100%{opacity:0} }
+
   .hero h1 {
     font-size: clamp(2.5rem, 6.5vw, 5rem); font-weight: 900; line-height: 1.02;
     letter-spacing: -0.03em; margin-bottom: 22px;
-    background: linear-gradient(135deg, #fff 0%, #4ade80 45%, #fbbf24 100%);
+    background: linear-gradient(90deg, #fff 0%, #4ade80 25%, #fbbf24 50%, #a78bfa 75%, #fff 100%);
+    background-size: 300% 100%;
     -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    animation: gradient-shift 8s ease-in-out infinite;
+    filter: drop-shadow(0 4px 30px rgba(74,222,128,0.15));
   }
-  .hero-sub { font-size: 1.25rem; color: var(--muted); max-width: 620px; margin: 0 auto 42px; line-height: 1.6; }
+  @keyframes gradient-shift { 0%,100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
+
+  .hero-sub { font-size: 1.25rem; color: var(--muted); max-width: 620px; margin: 0 auto 42px; line-height: 1.6; min-height: 3.2em; }
+  .hero-sub .cursor {
+    display: inline-block; width: 2px; height: 1.1em;
+    background: var(--green); margin-left: 2px; vertical-align: text-bottom;
+    animation: blink 1s infinite;
+  }
 
   .status-box {
     display: inline-flex; flex-direction: column; gap: 14px;
-    background: var(--card); border: 1px solid var(--border); border-radius: 20px;
+    background: rgba(10,22,16,0.92);
+    border: 1px solid rgba(74,222,128,0.4);
+    border-radius: var(--radius);
     padding: 24px 32px; backdrop-filter: blur(20px); margin-bottom: 40px;
-    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+    box-shadow:
+      0 0 20px rgba(74,222,128,0.25),
+      0 0 40px rgba(74,222,128,0.15),
+      0 20px 50px rgba(0,0,0,0.5);
+    animation: status-glow 3s ease-in-out infinite;
   }
+  @keyframes status-glow {
+    0%, 100% {
+      box-shadow:
+        0 0 20px rgba(74,222,128,0.25),
+        0 0 40px rgba(74,222,128,0.15),
+        0 20px 50px rgba(0,0,0,0.5);
+      border-color: rgba(74,222,128,0.4);
+    }
+    50% {
+      box-shadow:
+        0 0 30px rgba(74,222,128,0.5),
+        0 0 60px rgba(74,222,128,0.3),
+        0 20px 50px rgba(0,0,0,0.5);
+      border-color: rgba(74,222,128,0.7);
+    }
+  }
+
   .status-line { display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 1rem; font-weight: 600; }
   .dot { width: 12px; height: 12px; border-radius: 50%; background: #888; animation: pulse 2s infinite; }
-  .dot.online { background: var(--green); box-shadow: 0 0 15px var(--green); }
+  .dot.online { background: var(--green); box-shadow: 0 0 15px var(--green), 0 0 25px rgba(74,222,128,0.5); }
   .dot.offline { background: #ef4444; animation: none; }
   @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
   .ip-row { display: flex; gap: 10px; align-items: center; }
   .ip { font-family: 'Courier New', monospace; font-size: 1.05rem; background: rgba(0,0,0,0.4); padding: 12px 20px; border-radius: 10px; border: 1px solid var(--border); letter-spacing: 0.5px; }
+
+  .copy-btn, .btn-primary, .btn-secondary, .lane-btn, .step-link, .step-copy-btn, .pokedex-cta, .nav-cta, .sticky-cta {
+    position: relative; overflow: hidden; isolation: isolate;
+  }
+  .copy-btn::after, .btn-primary::after, .btn-secondary::after, .lane-btn::after, .pokedex-cta::after, .nav-cta::after, .sticky-cta::after {
+    content: ''; position: absolute; top: 0; left: -100%;
+    width: 100%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    transition: left 0.5s; pointer-events: none; z-index: 1;
+  }
+  .copy-btn:hover::after, .btn-primary:hover::after, .btn-secondary:hover::after, .lane-btn:hover::after, .pokedex-cta:hover::after, .nav-cta:hover::after, .sticky-cta:hover::after {
+    left: 100%;
+  }
+
   .copy-btn {
     background: var(--green); color: #000; border: none; padding: 12px 24px;
     border-radius: 10px; font-weight: 700; font-size: 0.95rem; cursor: pointer;
-    transition: transform 0.15s, box-shadow 0.15s; font-family: inherit;
+    transition: transform 0.15s, box-shadow 0.15s, background 0.3s; font-family: inherit;
   }
-  .copy-btn:hover { transform: scale(1.05); box-shadow: 0 10px 25px rgba(74,222,128,0.4); }
+  .copy-btn:hover { transform: scale(1.05); box-shadow: 0 10px 25px rgba(74,222,128,0.4), 0 0 30px rgba(74,222,128,0.25); }
+  .copy-btn.copied { background: var(--gold); animation: flash-success 0.6s; }
+  @keyframes flash-success {
+    0% { box-shadow: 0 0 0 0 rgba(251,191,36,0.7); }
+    70% { box-shadow: 0 0 0 20px rgba(251,191,36,0); }
+    100% { box-shadow: 0 0 0 0 rgba(251,191,36,0); }
+  }
 
   .hero-buttons { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
   .btn-primary {
@@ -102,73 +221,168 @@
     text-decoration: none; display: inline-flex; align-items: center; gap: 8px;
     box-shadow: 0 10px 30px rgba(251,191,36,0.3); transition: transform 0.2s, box-shadow 0.2s;
   }
-  .btn-primary:hover { transform: translateY(-3px); box-shadow: 0 15px 40px rgba(251,191,36,0.5); }
+  .btn-primary:hover { transform: translateY(-3px); box-shadow: 0 15px 40px rgba(251,191,36,0.5), 0 0 50px rgba(251,191,36,0.3); }
   .btn-secondary {
     background: var(--card); border: 1px solid var(--border); color: var(--text);
     padding: 16px 36px; border-radius: 14px; font-weight: 700; font-size: 1.05rem;
     text-decoration: none; display: inline-flex; align-items: center; gap: 8px;
-    transition: transform 0.2s, background 0.2s;
+    transition: transform 0.2s, background 0.2s, box-shadow 0.2s;
   }
-  .btn-secondary:hover { transform: translateY(-3px); background: rgba(255,255,255,0.09); }
+  .btn-secondary:hover { transform: translateY(-3px); background: rgba(255,255,255,0.09); box-shadow: 0 10px 30px rgba(0,0,0,0.4); }
 
-  .section { padding: 80px 0; }
+  .scroll-indicator {
+    position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%);
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
+    color: var(--muted); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.15em;
+    animation: bounce-indicator 2.5s ease-in-out infinite; z-index: 2;
+  }
+  .scroll-indicator svg { width: 20px; height: 20px; stroke: var(--green); animation: bounce-arrow 1.5s ease-in-out infinite; }
+  @keyframes bounce-indicator {
+    0%,100% { opacity: 0.5; transform: translateX(-50%) translateY(0); }
+    50% { opacity: 1; transform: translateX(-50%) translateY(-5px); }
+  }
+  @keyframes bounce-arrow { 0%,100% { transform: translateY(0); } 50% { transform: translateY(5px); } }
+
+  .wave-divider { position: relative; height: 80px; margin: -40px 0; z-index: 2; pointer-events: none; overflow: hidden; }
+  .wave-divider svg { width: 100%; height: 100%; display: block; }
+
+  .section { padding: 80px 0; position: relative; overflow: hidden; }
+  .section::before { content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 0; opacity: 0.5; }
+  .section > .container { position: relative; z-index: 1; }
   .section-header { text-align: center; margin-bottom: 56px; }
   .section-header h2 { font-size: clamp(2rem, 4vw, 2.75rem); font-weight: 800; margin-bottom: 12px; }
   .section-header p { color: var(--muted); font-size: 1.1rem; max-width: 600px; margin: 0 auto; }
 
+  .section-start .section-header h2 { color: var(--green); text-shadow: 0 0 30px rgba(74,222,128,0.4), 0 0 60px rgba(74,222,128,0.15); }
+  .section-why .section-header h2 { color: var(--gold); text-shadow: 0 0 30px rgba(251,191,36,0.4), 0 0 60px rgba(251,191,36,0.15); }
+  .section-lanes .section-header h2 { color: var(--gold); text-shadow: 0 0 30px rgba(251,191,36,0.4), 0 0 60px rgba(251,191,36,0.15); }
+  .section-pokedex .section-header h2 { color: var(--purple); text-shadow: 0 0 30px rgba(167,139,250,0.4), 0 0 60px rgba(167,139,250,0.15); }
+  .section-kalendarz .section-header h2 { color: var(--green); text-shadow: 0 0 30px rgba(74,222,128,0.4), 0 0 60px rgba(74,222,128,0.15); }
+  .section-faq .section-header h2 { color: var(--blue); text-shadow: 0 0 30px rgba(96,165,250,0.4), 0 0 60px rgba(96,165,250,0.15); }
+  .section-news .section-header h2 { color: var(--gold); text-shadow: 0 0 30px rgba(251,191,36,0.4), 0 0 60px rgba(251,191,36,0.15); }
+
+  .section-start::before {
+    background: radial-gradient(circle at 20% 30%, rgba(74,222,128,0.12) 0%, transparent 40%), radial-gradient(circle at 80% 70%, rgba(74,222,128,0.08) 0%, transparent 40%);
+    animation: mesh-move 15s ease-in-out infinite;
+  }
+  .section-why::before {
+    background: radial-gradient(circle at 80% 30%, rgba(251,191,36,0.12) 0%, transparent 40%), radial-gradient(circle at 20% 70%, rgba(251,191,36,0.08) 0%, transparent 40%);
+    animation: mesh-move 18s ease-in-out infinite reverse;
+  }
+  .section-lanes::before {
+    background: radial-gradient(circle at 50% 20%, rgba(251,191,36,0.1) 0%, transparent 50%), radial-gradient(circle at 50% 80%, rgba(251,191,36,0.06) 0%, transparent 50%);
+    animation: mesh-move 20s ease-in-out infinite;
+  }
+  .section-pokedex::before {
+    background: radial-gradient(circle at 30% 40%, rgba(167,139,250,0.14) 0%, transparent 40%), radial-gradient(circle at 70% 60%, rgba(167,139,250,0.08) 0%, transparent 40%);
+    animation: mesh-move 16s ease-in-out infinite reverse;
+  }
+  .section-kalendarz::before {
+    background: radial-gradient(circle at 40% 30%, rgba(74,222,128,0.1) 0%, transparent 40%), radial-gradient(circle at 60% 70%, rgba(74,222,128,0.06) 0%, transparent 40%);
+    animation: mesh-move 17s ease-in-out infinite;
+  }
+  .section-faq::before {
+    background: radial-gradient(circle at 70% 30%, rgba(96,165,250,0.12) 0%, transparent 40%), radial-gradient(circle at 30% 70%, rgba(96,165,250,0.06) 0%, transparent 40%);
+    animation: mesh-move 19s ease-in-out infinite reverse;
+  }
+  .section-news::before {
+    background: radial-gradient(circle at 20% 50%, rgba(251,191,36,0.1) 0%, transparent 40%), radial-gradient(circle at 80% 50%, rgba(251,191,36,0.06) 0%, transparent 40%);
+    animation: mesh-move 21s ease-in-out infinite;
+  }
+  @keyframes mesh-move {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    33% { transform: translate(2%, -2%) scale(1.05); }
+    66% { transform: translate(-2%, 2%) scale(1.05); }
+  }
+
   .steps-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 24px; max-width: 1000px; margin: 0 auto; }
   .step-card {
-    background: var(--card); border: 1px solid var(--border); border-radius: 20px;
+    background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
     padding: 32px 24px; text-align: center; position: relative;
-    transition: border-color 0.3s, transform 0.3s;
+    transition: border-color 0.3s, transform 0.3s, box-shadow 0.3s;
     display: flex; flex-direction: column; align-items: center;
+    transform-style: preserve-3d; will-change: transform; overflow: hidden;
   }
-  .step-card:hover { border-color: rgba(74,222,128,0.4); transform: translateY(-4px); }
+  .step-card::before {
+    content: ''; position: absolute; inset: 0; border-radius: var(--radius); padding: 1.5px;
+    background: linear-gradient(135deg, rgba(74,222,128,0.5), rgba(251,191,36,0.3), rgba(74,222,128,0.1));
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor; mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask-composite: exclude; opacity: 0; transition: opacity 0.3s; pointer-events: none;
+  }
+  .step-card:hover::before { opacity: 1; }
+  .step-card:hover { transform: translateY(-4px); box-shadow: 0 20px 50px rgba(74,222,128,0.12); }
+
   .step-number {
     width: 44px; height: 44px; margin: 0 auto 16px; border-radius: 50%;
-    background: rgba(74,222,128,0.15); border: 1px solid rgba(74,222,128,0.4);
-    color: var(--green); font-weight: 800; font-size: 1.15rem;
+    background: rgba(74,222,128,0.15); border: 1px solid rgba(74,222,128,0.4); color: var(--green);
+    font-weight: 800; font-size: 1.15rem;
     display: flex; align-items: center; justify-content: center;
   }
   .step-card h3 { font-size: 1.15rem; margin-bottom: 10px; font-weight: 700; }
   .step-card p { color: var(--muted); font-size: 0.95rem; line-height: 1.55; margin-bottom: 16px; flex: 1; }
   .step-link, .step-copy-btn {
-    display: inline-block;
-    padding: 10px 20px;
-    border-radius: 10px;
-    background: rgba(74,222,128,0.15);
-    border: 1px solid rgba(74,222,128,0.4);
-    color: var(--green);
-    font-weight: 700;
-    font-size: 0.9rem;
-    text-decoration: none;
-    cursor: pointer;
-    font-family: inherit;
-    transition: background 0.2s, transform 0.2s;
+    display: inline-block; padding: 10px 20px; border-radius: 10px;
+    background: rgba(74,222,128,0.15); border: 1px solid rgba(74,222,128,0.4);
+    color: var(--green); font-weight: 700; font-size: 0.9rem;
+    text-decoration: none; cursor: pointer; font-family: inherit;
+    transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
   }
   .step-link:hover, .step-copy-btn:hover {
-    background: rgba(74,222,128,0.25);
-    transform: translateY(-1px);
+    background: rgba(74,222,128,0.25); transform: translateY(-1px); box-shadow: 0 5px 20px rgba(74,222,128,0.25);
   }
 
   .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 24px; }
   .feature-card {
-    background: var(--card); border: 1px solid var(--border); border-radius: 20px;
-    padding: 32px; transition: border-color 0.3s, transform 0.3s;
+    background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 32px; transition: border-color 0.3s, transform 0.3s, box-shadow 0.3s;
+    transform-style: preserve-3d; will-change: transform; position: relative; overflow: hidden;
   }
-  .feature-card:hover { border-color: rgba(251,191,36,0.4); transform: translateY(-4px); }
-  .feature-icon { font-size: 2rem; margin-bottom: 16px; display: block; }
+  .feature-card::before {
+    content: ''; position: absolute; inset: 0; border-radius: var(--radius); padding: 1.5px;
+    background: linear-gradient(135deg, rgba(251,191,36,0.5), rgba(251,191,36,0.1), rgba(251,191,36,0.3));
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor; mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask-composite: exclude; opacity: 0; transition: opacity 0.3s; pointer-events: none;
+  }
+  .feature-card:hover::before { opacity: 1; }
+  .feature-card:hover { transform: translateY(-4px); box-shadow: 0 20px 50px rgba(251,191,36,0.12); }
+  .feature-icon {
+    font-size: 2rem; margin-bottom: 16px; display: inline-block;
+    animation: icon-bounce 3s ease-in-out infinite;
+    filter: drop-shadow(0 0 10px rgba(251,191,36,0.3));
+  }
+  .feature-card:nth-child(1) .feature-icon { animation-delay: 0s; }
+  .feature-card:nth-child(2) .feature-icon { animation-delay: 0.5s; }
+  .feature-card:nth-child(3) .feature-icon { animation-delay: 1s; }
+  @keyframes icon-bounce {
+    0%,100% { transform: translateY(0) scale(1); }
+    50% { transform: translateY(-5px) scale(1.1); }
+  }
   .feature-card h3 { font-size: 1.15rem; margin-bottom: 8px; font-weight: 700; }
   .feature-card p { color: var(--muted); font-size: 0.95rem; line-height: 1.6; }
 
   .single-lane {
     max-width: 600px; margin: 0 auto;
-    background: var(--card); border: 1px solid var(--border); border-radius: 24px;
+    background: var(--card); border-radius: var(--radius);
     padding: 48px; text-align: center;
-    transition: transform 0.3s, border-color 0.3s;
+    transition: transform 0.3s, box-shadow 0.3s;
+    transform-style: preserve-3d; will-change: transform; position: relative; overflow: hidden;
   }
-  .single-lane:hover { transform: translateY(-6px); border-color: rgba(251,191,36,0.5); box-shadow: 0 25px 60px rgba(251,191,36,0.1); }
-  .lane-icon { font-size: 3.5rem; margin-bottom: 20px; display: block; }
+  .single-lane::before {
+    content: ''; position: absolute; inset: 0; border-radius: var(--radius); padding: 1.5px;
+    background: linear-gradient(135deg, rgba(251,191,36,0.6), rgba(251,191,36,0.1), rgba(251,191,36,0.4));
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor; mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask-composite: exclude; opacity: 0; transition: opacity 0.3s; pointer-events: none;
+  }
+  .single-lane:hover::before { opacity: 1; }
+  .single-lane:hover { transform: translateY(-6px); box-shadow: 0 25px 60px rgba(251,191,36,0.15); }
+  .lane-icon { font-size: 3.5rem; margin-bottom: 20px; display: inline-block; animation: icon-float 4s ease-in-out infinite; filter: drop-shadow(0 0 20px rgba(251,191,36,0.4)); }
+  @keyframes icon-float {
+    0%,100% { transform: translateY(0) rotate(-3deg); }
+    50% { transform: translateY(-8px) rotate(3deg); }
+  }
   .single-lane h3 { font-size: 2rem; margin-bottom: 20px; font-weight: 800; color: var(--gold); }
   .single-lane ul { list-style: none; margin-bottom: 32px; text-align: left; display: inline-block; }
   .single-lane li { padding: 10px 0; color: var(--muted); display: flex; align-items: center; gap: 10px; }
@@ -179,119 +393,143 @@
     background: var(--gold); color: #000;
     transition: transform 0.2s, box-shadow 0.2s;
   }
-  .lane-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(0,0,0,0.4); }
+  .lane-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(0,0,0,0.4), 0 0 30px rgba(251,191,36,0.3); }
 
   .pokemon-strip { display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; padding: 40px 0; }
-  .pokemon-strip img { width: 85px; height: 85px; image-rendering: pixelated; filter: drop-shadow(0 10px 20px rgba(0,0,0,0.5)); transition: transform 0.3s; }
-  .pokemon-strip img:hover { transform: translateY(-12px) scale(1.15); }
+  .pokemon-strip img {
+    width: 85px; height: 85px; image-rendering: pixelated;
+    filter: drop-shadow(0 10px 20px rgba(0,0,0,0.5));
+    transition: transform 0.3s, filter 0.3s;
+    border-radius: 16px; padding: 6px;
+    background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06);
+  }
+  .pokemon-strip img:hover { transform: translateY(-12px) scale(1.15); filter: drop-shadow(0 15px 30px rgba(74,222,128,0.3)); border-color: rgba(74,222,128,0.3); }
 
   .pokedex-card {
     display: block;
     background: linear-gradient(135deg, rgba(167,139,250,0.12), rgba(74,222,128,0.06));
-    border: 1px solid rgba(167,139,250,0.35); border-radius: 24px;
+    border-radius: var(--radius);
     padding: 60px 40px; text-align: center;
     text-decoration: none; color: inherit;
-    transition: transform 0.3s, border-color 0.3s, box-shadow 0.3s;
+    transition: transform 0.3s, box-shadow 0.3s;
+    transform-style: preserve-3d; will-change: transform; position: relative; overflow: hidden;
   }
-  .pokedex-card:hover {
-    transform: translateY(-6px);
-    border-color: rgba(167,139,250,0.6);
-    box-shadow: 0 25px 60px rgba(167,139,250,0.15);
+  .pokedex-card::before {
+    content: ''; position: absolute; inset: 0; border-radius: var(--radius); padding: 2px;
+    background: linear-gradient(135deg, #a78bfa, #4ade80, #a78bfa);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor; mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask-composite: exclude; pointer-events: none;
   }
-  .pokedex-icon { font-size: 4rem; margin-bottom: 20px; display: block; }
+  .pokedex-card:hover { transform: translateY(-6px); box-shadow: 0 25px 60px rgba(167,139,250,0.2), 0 0 60px rgba(167,139,250,0.1); }
+  .pokedex-icon { font-size: 4rem; margin-bottom: 20px; display: inline-block; animation: icon-pulse 3s ease-in-out infinite; filter: drop-shadow(0 0 30px rgba(167,139,250,0.5)); }
+  @keyframes icon-pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.08); } }
   .pokedex-card h3 { font-size: 2rem; font-weight: 800; margin-bottom: 12px; color: var(--purple); }
   .pokedex-card p { color: var(--muted); font-size: 1.1rem; max-width: 500px; margin: 0 auto 28px; line-height: 1.6; }
   .pokedex-cta {
     display: inline-block; background: var(--purple); color: #000;
     padding: 14px 32px; border-radius: 12px; font-weight: 800;
-    transition: transform 0.2s;
+    transition: transform 0.2s, box-shadow 0.2s;
   }
-  .pokedex-card:hover .pokedex-cta { transform: translateY(-2px); }
+  .pokedex-card:hover .pokedex-cta { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(167,139,250,0.4); }
 
   .faq-list { max-width: 800px; margin: 0 auto; display: flex; flex-direction: column; gap: 12px; }
   .faq-item {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    overflow: hidden;
-    transition: border-color 0.3s;
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); overflow: hidden;
+    transition: border-color 0.3s, box-shadow 0.3s, background 0.3s;
   }
-  .faq-item:hover { border-color: rgba(255,255,255,0.2); }
+  .faq-item:hover {
+    border-color: rgba(96,165,250,0.4);
+    background: rgba(96,165,250,0.06);
+    box-shadow: 0 10px 30px rgba(96,165,250,0.1);
+  }
   .faq-item summary {
-    padding: 20px 24px;
-    cursor: pointer;
-    font-weight: 700;
-    font-size: 1.05rem;
-    list-style: none;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 16px;
+    padding: 20px 24px; cursor: pointer; font-weight: 700; font-size: 1.05rem;
+    list-style: none; display: flex; justify-content: space-between; align-items: center;
+    gap: 16px; transition: padding-left 0.2s;
   }
+  .faq-item:hover summary { padding-left: 30px; }
   .faq-item summary::-webkit-details-marker { display: none; }
   .faq-item summary::after {
-    content: '+';
-    font-size: 1.5rem;
-    color: var(--green);
-    font-weight: 400;
-    transition: transform 0.2s;
+    content: '+'; font-size: 1.5rem; color: var(--blue); font-weight: 400;
+    transition: transform 0.2s, color 0.2s; flex-shrink: 0;
   }
+  .faq-item:hover summary::after { color: #93c5fd; }
   .faq-item[open] summary::after { transform: rotate(45deg); }
-  .faq-item[open] summary { color: var(--green); }
-  .faq-answer {
-    padding: 0 24px 20px;
-    color: var(--muted);
-    font-size: 0.95rem;
-    line-height: 1.65;
-  }
+  .faq-item[open] summary { color: var(--blue); }
+  .faq-answer { padding: 0 24px 20px; color: var(--muted); font-size: 0.95rem; line-height: 1.65; }
 
   /* KALENDARZ */
-  #calendar {
-    background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 20px;
-    padding: 24px;
-    color: #fff;
+  #calendar-wrap {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.3), 0 0 60px rgba(74,222,128,0.05);
+    position: relative;
+    transform-origin: center bottom;
   }
-  .fc { color: #fff; }
-  .fc-theme-standard td, .fc-theme-standard th { border-color: rgba(255,255,255,0.1); }
-  .fc-theme-standard .fc-scrollgrid { border-color: rgba(255,255,255,0.1); }
-  .fc .fc-toolbar-title { color: #fff; font-weight: 800; }
+  #calendar { color: #fff; }
+
+  .fc { color: #fff; font-family: inherit; }
+  .fc .fc-toolbar-title {
+    color: #fff; font-weight: 800; font-size: 1.4rem;
+    letter-spacing: -0.02em; font-family: var(--font-heading);
+  }
   .fc .fc-button-primary {
     background: rgba(74,222,128,0.15) !important;
-    border-color: rgba(74,222,128,0.4) !important;
+    border: 1px solid rgba(74,222,128,0.4) !important;
     color: #4ade80 !important;
-    font-weight: 700;
+    font-weight: 700; text-transform: capitalize;
+    box-shadow: none !important; border-radius: 10px !important;
   }
-  .fc .fc-button-primary:hover {
-    background: rgba(74,222,128,0.25) !important;
+  .fc .fc-button-primary:hover { background: rgba(74,222,128,0.25) !important; }
+  .fc .fc-button-primary:not(:disabled).fc-button-active {
+    background: #4ade80 !important; color: #000 !important; border-color: #4ade80 !important;
+    box-shadow: 0 0 20px rgba(74,222,128,0.4) !important;
   }
-  .fc .fc-button-primary:disabled {
-    background: rgba(255,255,255,0.05) !important;
-    border-color: rgba(255,255,255,0.1) !important;
-    color: rgba(255,255,255,0.4) !important;
+  .fc-theme-standard td, .fc-theme-standard th { border-color: rgba(255,255,255,0.08); }
+  .fc-theme-standard .fc-scrollgrid { border-color: rgba(255,255,255,0.08); }
+  .fc .fc-col-header-cell-cushion {
+    color: #fff; font-weight: 700; text-transform: uppercase;
+    font-size: 0.8rem; letter-spacing: 0.05em; padding: 10px 0;
   }
-  .fc-daygrid-day-number { color: rgba(255,255,255,0.65); }
-  .fc-col-header-cell-cushion { color: #fff; font-weight: 700; text-transform: uppercase; font-size: 0.85rem; }
+  .fc .fc-daygrid-day-number { color: rgba(255,255,255,0.7); font-weight: 600; padding: 6px 8px; }
+  .fc .fc-day-today { background: rgba(74,222,128,0.08) !important; }
+  .fc .fc-day-today .fc-daygrid-day-number { color: #4ade80; }
+
   .fc-event {
-    background: #4ade80 !important;
-    border-color: #4ade80 !important;
-    color: #000 !important;
-    font-weight: 700;
-    cursor: pointer;
+    border: none !important; color: #000 !important; font-weight: 700;
+    padding: 2px 6px; border-radius: 6px !important; cursor: pointer; font-size: 0.85rem;
+    background: linear-gradient(90deg, #4ade80, #fbbf24, #4ade80) !important;
+    background-size: 200% 100% !important;
+    animation: event-shimmer 3s ease-in-out infinite;
+    box-shadow: 0 2px 10px rgba(74,222,128,0.3);
   }
-  .fc-event:hover { background: #22c55e !important; }
+  @keyframes event-shimmer {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+  }
+  .fc-event:hover { box-shadow: 0 4px 15px rgba(74,222,128,0.5); }
+  .fc-list-event:hover td { background: rgba(74,222,128,0.1) !important; }
+  .fc-list-day-cushion { background: rgba(255,255,255,0.05) !important; }
+  .fc-list-day-text, .fc-list-day-side-text { color: #fff !important; }
+  .fc-list-event-title { color: #fff !important; }
+  .fc-list-event-time { color: rgba(255,255,255,0.6) !important; }
+  .fc-list-event-dot { border-color: #4ade80 !important; }
 
   .news-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; }
   .news-card {
-    background: var(--card); border: 1px solid var(--border); border-radius: 20px;
-    overflow: hidden; transition: transform 0.3s, border-color 0.3s;
+    background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+    overflow: hidden; transition: transform 0.3s, border-color 0.3s, box-shadow 0.3s;
     text-decoration: none; color: inherit; display: block;
+    transform-style: preserve-3d; will-change: transform;
   }
-  .news-card:hover { transform: translateY(-6px); border-color: rgba(255,255,255,0.25); }
+  .news-card:hover { transform: translateY(-6px); border-color: rgba(251,191,36,0.4); box-shadow: 0 25px 60px rgba(251,191,36,0.15); }
   .news-thumb { height: 160px; background: linear-gradient(135deg, var(--bg-2), #2d1f12); display: flex; align-items: center; justify-content: center; position: relative; }
-  .news-thumb img { width: 105px; image-rendering: pixelated; }
-  .news-tag { position: absolute; top: 12px; left: 12px; background: rgba(0,0,0,0.65); color: var(--green); padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; }
+  .news-thumb img { width: 105px; image-rendering: pixelated; filter: drop-shadow(0 10px 20px rgba(0,0,0,0.5)); }
+  .news-tag { position: absolute; top: 12px; left: 12px; background: rgba(0,0,0,0.65); color: var(--green); padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; backdrop-filter: blur(10px); }
   .news-tag.gold { color: var(--gold); }
   .news-tag.purple { color: var(--purple); }
   .news-body { padding: 24px; }
@@ -299,75 +537,147 @@
   .news-body p { color: var(--muted); font-size: 0.95rem; line-height: 1.6; }
   .news-date { color: var(--green); font-size: 0.85rem; margin-top: 12px; font-weight: 600; }
 
-  footer { background: rgba(0,0,0,0.4); border-top: 1px solid var(--border); padding: 60px 0 30px; margin-top: 80px; }
+  footer {
+    background: rgba(0,0,0,0.4); border-top: 1px solid var(--border);
+    padding: 60px 0 30px; margin-top: 80px;
+    position: relative; overflow: hidden;
+  }
+  footer::before {
+    content: ''; position: absolute; inset: 0;
+    background:
+      radial-gradient(circle at 20% 50%, rgba(74,222,128,0.05) 0%, transparent 40%),
+      radial-gradient(circle at 80% 50%, rgba(251,191,36,0.05) 0%, transparent 40%);
+    animation: mesh-move 25s ease-in-out infinite;
+    pointer-events: none; z-index: 0;
+  }
+  footer > .container { position: relative; z-index: 1; }
   .footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 40px; margin-bottom: 40px; }
   @media (max-width: 800px) { .footer-grid { grid-template-columns: 1fr 1fr; } }
   @media (max-width: 500px) { .footer-grid { grid-template-columns: 1fr; } }
   .footer-col h4 { font-size: 1rem; margin-bottom: 16px; font-weight: 700; color: var(--green); text-transform: uppercase; }
-  .footer-col a { display: block; color: var(--muted); text-decoration: none; padding: 6px 0; font-size: 0.95rem; transition: color 0.2s; }
-  .footer-col a:hover { color: var(--green); }
+  .footer-col a {
+    display: block; color: var(--muted); text-decoration: none;
+    padding: 6px 0; font-size: 0.95rem;
+    transition: color 0.2s, transform 0.2s, padding-left 0.2s;
+  }
+  .footer-col a:hover { color: var(--green); transform: translateX(5px); padding-left: 4px; }
   .footer-col p { color: var(--muted); font-size: 0.95rem; line-height: 1.6; }
   .footer-bottom { text-align: center; padding-top: 30px; border-top: 1px solid var(--border); color: var(--muted); font-size: 0.9rem; }
+
+  .sticky-cta {
+    position: fixed; bottom: 24px; right: 24px; z-index: 99;
+    display: inline-flex; align-items: center; gap: 10px;
+    padding: 14px 24px;
+    background: linear-gradient(135deg, #5865F2, #4752c4);
+    color: #fff; border-radius: 14px;
+    font-weight: 800; font-size: 0.95rem; text-decoration: none;
+    box-shadow: 0 10px 30px rgba(88,101,242,0.4), 0 0 40px rgba(88,101,242,0.2);
+    transition: transform 0.2s, box-shadow 0.2s, opacity 0.3s;
+    opacity: 0; transform: translateY(20px); pointer-events: none;
+  }
+  .sticky-cta.visible { opacity: 1; transform: translateY(0); pointer-events: auto; }
+  .sticky-cta:hover { transform: translateY(-3px); box-shadow: 0 15px 40px rgba(88,101,242,0.6), 0 0 60px rgba(88,101,242,0.3); }
+  .sticky-cta .cta-icon { font-size: 1.2rem; }
+  @media (max-width: 600px) {
+    .sticky-cta { bottom: 16px; right: 16px; padding: 12px 18px; font-size: 0.85rem; }
+  }
+
+  .reveal {
+    opacity: 0; transform: translateY(30px);
+    transition: opacity 0.8s cubic-bezier(0.2, 0.8, 0.2, 1), transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+    will-change: opacity, transform;
+  }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+  .reveal-delay-1 { transition-delay: 0.1s; }
+  .reveal-delay-2 { transition-delay: 0.2s; }
+  .reveal-delay-3 { transition-delay: 0.3s; }
+  .reveal-delay-4 { transition-delay: 0.4s; }
 
   @media (max-width: 800px) {
     .nav-links a:not(.nav-cta) { display: none; }
     .hero { padding: 60px 0 40px; }
     .section { padding: 60px 0; }
+    #calendar-wrap { padding: 16px; }
+    .fc .fc-toolbar { flex-direction: column; gap: 10px; }
+    .scroll-indicator { display: none; }
+    .wave-divider { height: 40px; margin: -20px 0; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .reveal { opacity: 1; transform: none; transition: none; }
+    .hero-floats img, .hero h1, .badge .badge-cursor, .feature-icon, .lane-icon, .pokedex-icon, .scroll-indicator svg, .fc-event, .status-box { animation: none; }
+    .particles, .wave-divider { display: none; }
+    .section::before, footer::before { animation: none; }
   }
 </style>
 </head>
 <body>
 
-<nav>
+<nav id="navbar">
   <div class="nav-inner">
     <a href="index.html" class="logo">
       <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/25.png" alt="Pikachu">
-      <span>Pixelmonia</span>
+      <span data-text="Pixelmonia">Pixelmonia</span>
     </a>
     <div class="nav-links">
       <a href="#lanes">Gra</a>
       <a href="staff.html">Staff</a>
       <a href="https://www.cobbleverseguides.com/" target="_blank" rel="noopener">Wiki</a>
-      <a href="#news">Nowości</a>
       <a href="#kalendarz">Kalendarz</a>
+      <a href="#news">Nowości</a>
       <a href="https://discord.gg/GnqEEMP2zh" class="nav-cta" target="_blank" rel="noopener">Discord</a>
     </div>
   </div>
 </nav>
 
 <section class="hero">
-  <div class="hero-floats">
+  <div class="hero-floats" id="parallaxLayer">
     <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1.png" alt="">
     <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/4.png" alt="">
     <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/7.png" alt="">
     <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/25.png" alt="">
   </div>
+  <div class="particles" id="particles"></div>
   <div class="container">
-    <div class="badge">✨ Sezon 6 — Wkrótce</div>
-    <h1>Najlepsza Przygoda<br>z Cobblemon</h1>
-    <p class="hero-sub">Miejsce, gdzie możesz rywalizować i kolekcjonować. Dołącz do społeczności Pixelmonia.</p>
+    <div class="badge reveal">
+      <span>✨ Sezon 6 — Wkrótce</span><span class="badge-cursor"></span>
+    </div>
+    <h1 class="reveal reveal-delay-1">Najlepsza Przygoda<br>z Cobblemon</h1>
+    <p class="hero-sub reveal reveal-delay-2" id="typewriter" data-text="Miejsce, gdzie możesz rywalizować i kolekcjonować. Dołącz do społeczności Pixelmonia."></p>
 
-    <div class="status-box">
+    <div class="status-box reveal reveal-delay-3">
       <div class="status-line">
         <span class="dot" id="statusDot"></span>
         <span id="statusText">Sprawdzanie statusu...</span>
       </div>
       <div class="ip-row">
         <span class="ip" id="serverIp">Pixelmonia.pl</span>
-        <button class="copy-btn" onclick="copyIp()">Kopiuj IP</button>
+        <button class="copy-btn" id="copyBtn" onclick="copyIp()">Kopiuj IP</button>
       </div>
     </div>
 
-    <div class="hero-buttons">
+    <div class="hero-buttons reveal reveal-delay-4">
       <a href="https://discord.gg/GnqEEMP2zh" class="btn-primary" target="_blank" rel="noopener">💬 Dołącz na Discord</a>
       <a href="https://www.cobbleverseguides.com/" class="btn-secondary" target="_blank" rel="noopener">📖 Przeglądaj Wiki</a>
     </div>
   </div>
+  <div class="scroll-indicator">
+    <span>Przewiń</span>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="6 9 12 15 18 9"></polyline>
+    </svg>
+  </div>
 </section>
+
+<div class="wave-divider">
+  <svg viewBox="0 0 1440 80" preserveAspectRatio="none">
+    <path fill="rgba(74,222,128,0.04)" d="M0,40 C240,80 480,0 720,40 C960,80 1200,0 1440,40 L1440,80 L0,80 Z"/>
+  </svg>
+</div>
 
 <section style="padding:20px 0;">
   <div class="container">
-    <div class="pokemon-strip">
+    <div class="pokemon-strip reveal">
       <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/6.png" alt="">
       <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/9.png" alt="">
       <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/3.png" alt="">
@@ -379,59 +689,65 @@
   </div>
 </section>
 
-<!-- JAK ZACZĄĆ -->
-<section class="section" id="start">
+<div class="wave-divider">
+  <svg viewBox="0 0 1440 80" preserveAspectRatio="none">
+    <path fill="rgba(74,222,128,0.03)" d="M0,20 C360,80 720,0 1080,40 C1260,60 1350,50 1440,30 L1440,80 L0,80 Z"/>
+  </svg>
+</div>
+
+<section class="section section-start" id="start">
   <div class="container">
-    <div class="section-header">
-      <h2>Jak zacząć?</h2>
+    <div class="section-header reveal">
+      <h2>🎮 Jak zacząć?</h2>
       <p>Trzy kroki i jesteś w grze.</p>
     </div>
     <div class="steps-grid">
-
-      <div class="step-card">
+      <div class="step-card reveal reveal-delay-1 tilt">
         <div class="step-number">1</div>
         <h3>Wejdź na Discord</h3>
         <p>Discord to nasze centrum — tam znajdziesz modpacka, eventy, zapisy na turnieje i pomoc od staffu.</p>
         <a href="https://discord.gg/GnqEEMP2zh" class="step-link" target="_blank" rel="noopener">Dołącz na Discord →</a>
       </div>
-
-      <div class="step-card">
+      <div class="step-card reveal reveal-delay-2 tilt">
         <div class="step-number">2</div>
         <h3>Pobierz modpacka</h3>
         <p>Pobierz nasz oficjalny modpack z kanału <strong>#｜𝓙𝓐𝓚-𝓩𝓐𝓖𝓡𝓐𝓒▸🔽｜</strong> na Discordzie lub kliknij bezpośredni link poniżej.</p>
         <a href="https://www.mediafire.com/file/ha2on4pea48owgw/PixelMonia+-+Server+Modpack+1.1.0.mrpack/file" class="step-link" target="_blank" rel="noopener">Pobierz modpack →</a>
       </div>
-
-      <div class="step-card">
+      <div class="step-card reveal reveal-delay-3 tilt">
         <div class="step-number">3</div>
         <h3>Skopiuj IP i wejdź</h3>
         <p>Uruchom modpacka, wklej IP <strong style="color:#4ade80;">Pixelmonia.pl</strong> i dołącz do serwera.</p>
         <button class="step-copy-btn" onclick="copyIp()">Kopiuj IP</button>
       </div>
-
     </div>
   </div>
 </section>
 
-<!-- DLACZEGO PIXELMONIA -->
-<section class="section" id="why">
+<div class="wave-divider">
+  <svg viewBox="0 0 1440 80" preserveAspectRatio="none">
+    <path fill="rgba(251,191,36,0.03)" d="M0,50 C300,0 600,80 900,30 C1100,0 1300,60 1440,40 L1440,80 L0,80 Z"/>
+  </svg>
+</div>
+
+<section class="section section-why" id="why">
   <div class="container">
-    <div class="section-header">
-      <h2>Dlaczego Pixelmonia?</h2>
+    <div class="section-header reveal">
+      <h2>💎 Dlaczego Pixelmonia?</h2>
       <p>Bo nie jesteśmy kolejnym pustym serwerem.</p>
     </div>
     <div class="features-grid">
-      <div class="feature-card">
+      <div class="feature-card reveal reveal-delay-1 tilt">
         <span class="feature-icon">🎮</span>
         <h3>Stabilny serwer</h3>
         <p>Bez lagów, bez crashy. Hosting klasy premium i optymalizacja pod Cobblemon.</p>
       </div>
-      <div class="feature-card">
+      <div class="feature-card reveal reveal-delay-2 tilt">
         <span class="feature-icon">👥</span>
         <h3>Aktywna społeczność</h3>
         <p>Setki graczy na Discordzie, cotygodniowe eventy i pomoc od staffu.</p>
       </div>
-      <div class="feature-card">
+      <div class="feature-card reveal reveal-delay-3 tilt">
         <span class="feature-icon">✨</span>
         <h3>Sezonowe nowości</h3>
         <p>Każdy sezon to nowe wyzwania, nagrody i content. Sezon 6 nadchodzi!</p>
@@ -440,14 +756,19 @@
   </div>
 </section>
 
-<!-- RYWALIZACJA -->
-<section class="section" id="lanes">
+<div class="wave-divider">
+  <svg viewBox="0 0 1440 80" preserveAspectRatio="none">
+    <path fill="rgba(251,191,36,0.02)" d="M0,30 C400,80 800,0 1200,40 C1350,55 1400,45 1440,35 L1440,80 L0,80 Z"/>
+  </svg>
+</div>
+
+<section class="section section-lanes" id="lanes">
   <div class="container">
-    <div class="section-header">
-      <h2>Rywalizacja</h2>
+    <div class="section-header reveal">
+      <h2>🏆 Rywalizacja</h2>
       <p>Dominuj w rankingu, buduj drużynę i wygrywaj turnieje.</p>
     </div>
-    <div class="single-lane">
+    <div class="single-lane reveal tilt">
       <span class="lane-icon">🏆</span>
       <h3>Wejdź na Arenę</h3>
       <ul>
@@ -461,10 +782,15 @@
   </div>
 </section>
 
-<!-- POKEDEX -->
-<section class="section" id="pokedex">
+<div class="wave-divider">
+  <svg viewBox="0 0 1440 80" preserveAspectRatio="none">
+    <path fill="rgba(167,139,250,0.03)" d="M0,45 C250,0 500,80 750,35 C1000,0 1200,70 1440,45 L1440,80 L0,80 Z"/>
+  </svg>
+</div>
+
+<section class="section section-pokedex" id="pokedex">
   <div class="container">
-    <a href="https://www.cobbleverseguides.com/pokemon" class="pokedex-card" target="_blank" rel="noopener">
+    <a href="https://www.cobbleverseguides.com/pokemon" class="pokedex-card reveal tilt" target="_blank" rel="noopener">
       <span class="pokedex-icon">📖</span>
       <h3>Kompletny Pokédex</h3>
       <p>Sprawdź statystyki, typy i ewolucje wszystkich Pokémonów. Pełna baza z 9 generacji — otwórz w nowej karcie.</p>
@@ -473,87 +799,77 @@
   </div>
 </section>
 
-<!-- FAQ -->
-<section class="section" id="faq">
+<div class="wave-divider">
+  <svg viewBox="0 0 1440 80" preserveAspectRatio="none">
+    <path fill="rgba(74,222,128,0.02)" d="M0,40 C320,80 640,0 960,40 C1200,70 1350,50 1440,40 L1440,80 L0,80 Z"/>
+  </svg>
+</div>
+
+<section class="section section-kalendarz" id="kalendarz">
   <div class="container">
-    <div class="section-header">
-      <h2>Najczęstsze pytania</h2>
-      <p>Krótkie odpowiedzi na to, o co pytacie najczęściej.</p>
-    </div>
-    <div class="faq-list">
-
-      <details class="faq-item">
-        <summary>Jak zainstalować modpack?</summary>
-        <div class="faq-answer">
-          Wejdź na nasz Discord, przejdź do kanału <strong>#｜𝓙𝓐𝓚-𝓩𝓐𝓖𝓡𝓐𝓒▸🔽｜</strong> i pobierz plik modpacka. Następnie zaimportuj go do Modrinth lub Prism Launcher.
-        </div>
-      </details>
-
-      <details class="faq-item">
-        <summary>Czy serwer jest premium?</summary>
-        <div class="faq-answer">
-          Tak, serwer wymaga konta premium Minecraft. Nie obsługujemy trybu offline.
-        </div>
-      </details>
-
-      <details class="faq-item">
-        <summary>Jak zgłosić gracza lub błąd?</summary>
-        <div class="faq-answer">
-          Najszybciej przez Discord — napisz na kanale pomocy lub oznacz staff. Możesz też napisać bezpośrednio do właściciela.
-        </div>
-      </details>
-
-      <details class="faq-item">
-        <summary>Kiedy startuje Sezon 6?</summary>
-        <div class="faq-answer">
-          Dokładna data nie została jeszcze ogłoszona. Śledź Discorda — tam pojawi się pierwsza informacja.
-        </div>
-      </details>
-
-    </div>
-  </div>
-</section>
-
-<!-- KALENDARZ EVENTÓW -->
-<section class="section" id="kalendarz">
-  <div class="container">
-    <div class="section-header">
-      <h2>Kalendarz Eventów</h2>
+    <div class="section-header reveal">
+      <h2>📅 Kalendarz Eventów</h2>
       <p>Sprawdź, co się dzieje na serwerze.</p>
     </div>
-    <div id="calendar"></div>
+    <div id="calendar-wrap" class="reveal">
+      <div id="calendar"></div>
+    </div>
   </div>
 </section>
 
-<!-- NEWS -->
-<section class="section" id="news">
+<div class="wave-divider">
+  <svg viewBox="0 0 1440 80" preserveAspectRatio="none">
+    <path fill="rgba(96,165,250,0.03)" d="M0,35 C360,80 720,0 1080,45 C1250,65 1380,50 1440,38 L1440,80 L0,80 Z"/>
+  </svg>
+</div>
+
+<section class="section section-faq" id="faq">
   <div class="container">
-    <div class="section-header">
-      <h2>Najnowsze z Pixelmonii</h2>
+    <div class="section-header reveal">
+      <h2>❓ Najczęstsze pytania</h2>
+      <p>Krótkie odpowiedzi na to, o co pytacie najczęściej.</p>
+    </div>
+    <div class="faq-list reveal">
+      <details class="faq-item">
+        <summary>Jak zainstalować modpack?</summary>
+        <div class="faq-answer">Wejdź na nasz Discord, przejdź do kanału <strong>#｜𝓙𝓐𝓚-𝓩𝓐𝓖𝓡𝓐𝓒▸🔽｜</strong> i pobierz plik modpacka. Następnie zaimportuj go do Modrinth lub Prism Launcher.</div>
+      </details>
+      <details class="faq-item">
+        <summary>Czy serwer jest premium?</summary>
+        <div class="faq-answer">Tak, serwer wymaga konta premium Minecraft. Nie obsługujemy trybu offline.</div>
+      </details>
+      <details class="faq-item">
+        <summary>Jak zgłosić gracza lub błąd?</summary>
+        <div class="faq-answer">Najszybciej przez Discord — napisz na kanale pomocy lub oznacz staff. Możesz też napisać bezpośrednio do właściciela.</div>
+      </details>
+      <details class="faq-item">
+        <summary>Kiedy startuje Sezon 6?</summary>
+        <div class="faq-answer">Dokładna data nie została jeszcze ogłoszona. Śledź Discorda — tam pojawi się pierwsza informacja.</div>
+      </details>
+    </div>
+  </div>
+</section>
+
+<div class="wave-divider">
+  <svg viewBox="0 0 1440 80" preserveAspectRatio="none">
+    <path fill="rgba(251,191,36,0.02)" d="M0,40 C280,80 560,0 840,40 C1120,80 1280,20 1440,40 L1440,80 L0,80 Z"/>
+  </svg>
+</div>
+
+<section class="section section-news" id="news">
+  <div class="container">
+    <div class="section-header reveal">
+      <h2>📰 Najnowsze z Pixelmonii</h2>
       <p>Aktualizacje, eventy i wydarzenia społeczności.</p>
     </div>
     <div class="news-grid">
-      <a href="https://discord.gg/GnqEEMP2zh" class="news-card" target="_blank" rel="noopener">
-        <div class="news-thumb">
-          <span class="news-tag purple">Sezon 6</span>
-          <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/6.png" alt="">
-        </div>
-        <div class="news-body">
-          <h3>Sezon 6 Nadchodzi</h3>
-          <p>Nowy sezon pełen świeżej zawartości, nagród i niespodzianek. Szczegóły najpierw na Discordzie.</p>
-          <div class="news-date">📅 Wkrótce</div>
-        </div>
+      <a href="https://discord.gg/GnqEEMP2zh" class="news-card reveal reveal-delay-1 tilt" target="_blank" rel="noopener">
+        <div class="news-thumb"><span class="news-tag purple">Sezon 6</span><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/6.png" alt=""></div>
+        <div class="news-body"><h3>Sezon 6 Nadchodzi</h3><p>Nowy sezon pełen świeżej zawartości, nagród i niespodzianek. Szczegóły najpierw na Discordzie.</p><div class="news-date">📅 Wkrótce</div></div>
       </a>
-      <a href="https://discord.gg/GnqEEMP2zh" class="news-card" target="_blank" rel="noopener">
-        <div class="news-thumb">
-          <span class="news-tag gold">Turniej</span>
-          <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/130.png" alt="">
-        </div>
-        <div class="news-body">
-          <h3>Cotygodniowy Turniej w Soboty</h3>
-          <p>Zapisy będą na discordzie - Nagrody bedą tylko dla top 3</p>
-          <div class="news-date">📅 Sobota</div>
-        </div>
+      <a href="https://discord.gg/GnqEEMP2zh" class="news-card reveal reveal-delay-2 tilt" target="_blank" rel="noopener">
+        <div class="news-thumb"><span class="news-tag gold">Turniej</span><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/130.png" alt=""></div>
+        <div class="news-body"><h3>Cotygodniowy Turniej w Soboty</h3><p>Zapisy będą na discordzie - Nagrody bedą tylko dla top 3</p><div class="news-date">📅 Sobota</div></div>
       </a>
     </div>
   </div>
@@ -562,33 +878,18 @@
 <footer>
   <div class="container">
     <div class="footer-grid">
-      <div class="footer-col">
-        <h4>Pixelmonia</h4>
-        <p>Społeczność dla każdego trenera. Stworzona przez graczy dla graczy.</p>
-      </div>
-      <div class="footer-col">
-        <h4>Gra</h4>
-        <a href="index.html">Strona główna</a>
-        <a href="#lanes">Rywalizacja</a>
-        <a href="https://www.cobbleverseguides.com/pokemon" target="_blank" rel="noopener">Pokédex</a>
-      </div>
-      <div class="footer-col">
-        <h4>Społeczność</h4>
-        <a href="https://discord.gg/GnqEEMP2zh" target="_blank" rel="noopener">Discord</a>
-        <a href="staff.html">Staff</a>
-        <a href="https://www.cobbleverseguides.com/" target="_blank" rel="noopener">Wiki</a>
-      </div>
-      <div class="footer-col">
-        <h4>Serwer</h4>
-        <a href="#" onclick="copyIp();return false;">Kopiuj IP</a>
-        <a href="#">Status</a>
-      </div>
+      <div class="footer-col"><h4>Pixelmonia</h4><p>Społeczność dla każdego trenera. Stworzona przez graczy dla graczy.</p></div>
+      <div class="footer-col"><h4>Gra</h4><a href="index.html">Strona główna</a><a href="#lanes">Rywalizacja</a><a href="https://www.cobbleverseguides.com/pokemon" target="_blank" rel="noopener">Pokédex</a></div>
+      <div class="footer-col"><h4>Społeczność</h4><a href="https://discord.gg/GnqEEMP2zh" target="_blank" rel="noopener">Discord</a><a href="staff.html">Staff</a><a href="https://www.cobbleverseguides.com/" target="_blank" rel="noopener">Wiki</a></div>
+      <div class="footer-col"><h4>Serwer</h4><a href="#" onclick="copyIp();return false;">Kopiuj IP</a><a href="#">Status</a></div>
     </div>
-    <div class="footer-bottom">
-      © 2026 Pixelmonia · Pixelmonia.pl · Sezon 6 wkrótce · Niepowiązane z Mojang, Nintendo ani The Pokémon Company.
-    </div>
+    <div class="footer-bottom">© 2026 Pixelmonia · Pixelmonia.pl · Sezon 6 wkrótce · Niepowiązane z Mojang, Nintendo ani The Pokémon Company.</div>
   </div>
 </footer>
+
+<a href="https://discord.gg/GnqEEMP2zh" class="sticky-cta" id="stickyCta" target="_blank" rel="noopener">
+  <span class="cta-icon">💬</span> Dołącz na Discord
+</a>
 
 <script>
   const SERVER_IP = "Pixelmonia.pl";
@@ -596,10 +897,14 @@
 
   function copyIp() {
     navigator.clipboard.writeText(SERVER_IP).then(() => {
-      const btn = document.querySelector('.copy-btn');
+      const btn = document.getElementById('copyBtn');
       const orig = btn.textContent;
       btn.textContent = '✓ Skopiowano!';
-      setTimeout(() => btn.textContent = orig, 1500);
+      btn.classList.add('copied');
+      setTimeout(() => {
+        btn.textContent = orig;
+        btn.classList.remove('copied');
+      }, 1500);
     });
   }
 
@@ -620,43 +925,220 @@
       document.getElementById('statusText').textContent = 'Status niedostępny';
       document.getElementById('statusDot').classList.add('offline');
     });
-</script>
 
-<!-- FULLCALENDAR -->
-<link href="https://cdn.jsdelivr.net/npm/fullcalendar@7.1.3/index.global.min.css" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/fullcalendar@7.1.3/index.global.min.js"></script>
-<script>
+  (function() {
+    const el = document.getElementById('typewriter');
+    if (!el) return;
+    const fullText = el.dataset.text;
+    let i = 0;
+    el.innerHTML = '<span class="typed"></span><span class="cursor"></span>';
+    const typed = el.querySelector('.typed');
+    function type() {
+      if (i < fullText.length) {
+        typed.textContent += fullText.charAt(i);
+        i++;
+        setTimeout(type, 35);
+      }
+    }
+    setTimeout(type, 800);
+  })();
+
+  (function() {
+    const container = document.getElementById('particles');
+    if (!container) return;
+    for (let i = 0; i < 20; i++) {
+      const p = document.createElement('span');
+      p.style.left = Math.random() * 100 + '%';
+      p.style.animationDuration = (8 + Math.random() * 10) + 's';
+      p.style.animationDelay = (Math.random() * 10) + 's';
+      p.style.width = p.style.height = (2 + Math.random() * 3) + 'px';
+      container.appendChild(p);
+    }
+  })();
+
+  (function() {
+    const layer = document.getElementById('parallaxLayer');
+    if (!layer) return;
+    let ticking = false;
+    window.addEventListener('scroll', function() {
+      if (!ticking) {
+        window.requestAnimationFrame(function() {
+          layer.style.transform = `translateY(${window.scrollY * 0.3}px)`;
+          ticking = false;
+        });
+        ticking = true;
+      }
+    });
+  })();
+
+  (function() {
+    const cards = document.querySelectorAll('.tilt');
+    cards.forEach(card => {
+      card.addEventListener('mousemove', function(e) {
+        const rect = card.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        const rotateX = ((y - rect.height / 2) / (rect.height / 2)) * -6;
+        const rotateY = ((x - rect.width / 2) / (rect.width / 2)) * 6;
+        card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-4px)`;
+      });
+      card.addEventListener('mouseleave', function() {
+        card.style.transform = '';
+      });
+    });
+  })();
+
+  (function() {
+    const cta = document.getElementById('stickyCta');
+    if (!cta) return;
+    window.addEventListener('scroll', function() {
+      if (window.scrollY > 400) cta.classList.add('visible');
+      else cta.classList.remove('visible');
+    });
+  })();
+
+  (function() {
+    const nav = document.getElementById('navbar');
+    if (!nav) return;
+    window.addEventListener('scroll', function() {
+      if (window.scrollY > 20) nav.classList.add('scrolled');
+      else nav.classList.remove('scrolled');
+    });
+  })();
+
   document.addEventListener('DOMContentLoaded', function() {
-    const calendarEl = document.getElementById('calendar');
-    if (calendarEl && typeof FullCalendar !== 'undefined') {
-      const calendar = new FullCalendar.Calendar(calendarEl, {
-        initialView: 'dayGridMonth',
-        locale: 'pl',
-        headerToolbar: {
-          left: 'prev,next today',
-          center: 'title',
-          right: 'dayGridMonth,listWeek'
-        },
-        events: [
-          // Eventy z CMS będą dodawane dynamicznie
-          // Na razie przykładowy event
-          {
-            title: 'Przykładowy Turniej',
-            start: '2026-11-10T18:00:00',
-            description: 'To jest przykładowy event. Możesz go usunąć w panelu admina.'
-          }
-        ],
-        eventColor: '#4ade80',
-        eventTextColor: '#000',
-        eventClick: function(info) {
-          if (info.event.extendedProps.description) {
-            alert(info.event.title + '\n\n' + info.event.extendedProps.description);
-          }
+    const reveals = document.querySelectorAll('.reveal');
+    if (!('IntersectionObserver' in window)) {
+      reveals.forEach(el => el.classList.add('visible'));
+      return;
+    }
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          observer.unobserve(entry.target);
         }
       });
-      calendar.render();
+    }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+    reveals.forEach(el => observer.observe(el));
+  });
+</script>
+
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const calendarEl = document.getElementById('calendar');
+  const wrap = document.getElementById('calendar-wrap');
+  if (!calendarEl || typeof FullCalendar === 'undefined') return;
+
+  const calendar = new FullCalendar.Calendar(calendarEl, {
+    initialView: 'dayGridMonth',
+    locale: 'pl', firstDay: 1, height: 'auto',
+    headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth,listWeek' },
+    buttonText: { today: 'Dziś', month: 'Miesiąc', week: 'Tydzień', list: 'Lista' },
+    events: [
+      // ═══════════════════════════════════════════════════════════
+      // 👇 TUTAJ WPISUJESZ EVENTY 👇
+      // Format: { title: 'Nazwa', start: 'RRRR-MM-DDTHH:MM:SS', end: 'RRRR-MM-DDTHH:MM:SS', description: 'Opis' }
+      // ═══════════════════════════════════════════════════════════
+      {
+        title: 'Przykładowy Turniej',
+        start: '2026-11-10T18:00:00',
+        end: '2026-11-10T21:00:00',
+        description: 'To jest przykładowy event. Możesz go usunąć w kodzie.'
+      },
+      // ═══════════════════════════════════════════════════════════
+      // 👆 KONIEC WPISYWANIA EVENTÓW 👆
+      // ═══════════════════════════════════════════════════════════
+    ],
+    eventColor: '#4ade80',
+    eventTextColor: '#000',
+    eventClick: function(info) {
+      info.jsEvent.preventDefault();
+      const desc = info.event.extendedProps.description;
+      alert(desc ? `📅 ${info.event.title}\n\n${desc}` : `📅 ${info.event.title}`);
     }
   });
+  calendar.render();
+
+  // DŹWIĘK
+  const pageTurnSound = new Audio('page-turn.mp3');
+  pageTurnSound.volume = 0.4;
+  pageTurnSound.preload = 'auto';
+  function playPageTurnSound() {
+    try {
+      pageTurnSound.currentTime = 0;
+      pageTurnSound.play().catch(err => console.warn('Audio:', err));
+    } catch (err) {
+      console.warn('Audio error:', err);
+    }
+  }
+
+  // EFEKT KARTKI — Web Animations API (z kierunkiem)
+  let isAnimating = false;
+
+  function animatePageTurn(callback, direction) {
+    if (isAnimating) return;
+    isAnimating = true;
+
+    playPageTurnSound();
+
+    const outRotate = direction === -1 ? 100 : -100;
+    const inRotate = direction === -1 ? -100 : 100;
+
+    const outAnim = wrap.animate([
+      { transform: 'perspective(1800px) rotateX(0deg)', opacity: 1 },
+      { transform: `perspective(1800px) rotateX(${outRotate}deg)`, opacity: 0 }
+    ], {
+      duration: 600,
+      easing: 'cubic-bezier(0.4, 0.0, 0.2, 1)',
+      fill: 'forwards'
+    });
+
+    outAnim.onfinish = () => {
+      callback();
+
+      requestAnimationFrame(() => {
+        const inAnim = wrap.animate([
+          { transform: `perspective(1800px) rotateX(${inRotate}deg)`, opacity: 0 },
+          { transform: 'perspective(1800px) rotateX(0deg)', opacity: 1 }
+        ], {
+          duration: 600,
+          easing: 'cubic-bezier(0.4, 0.0, 0.2, 1)',
+          fill: 'forwards'
+        });
+
+        inAnim.onfinish = () => {
+          outAnim.cancel();
+          inAnim.cancel();
+          isAnimating = false;
+        };
+      });
+    };
+  }
+
+  document.querySelectorAll('.fc-prev-button, .fc-next-button').forEach(btn => {
+    btn.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      const direction = this.classList.contains('fc-prev-button') ? -1 : 1;
+      animatePageTurn(() => {
+        calendar.incrementDate({ months: direction });
+      }, direction);
+    }, true);
+  });
+
+  document.querySelectorAll('.fc-today-button').forEach(btn => {
+    btn.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      animatePageTurn(() => {
+        calendar.today();
+      }, 1);
+    }, true);
+  });
+});
 </script>
 
 </body>
